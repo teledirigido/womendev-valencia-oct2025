@@ -6,15 +6,16 @@
         {{ currentIndex + 1 }} / {{ cardCounter }}
       </div>
       <div class="navigation">
-        <button @click="previous" :disabled="!hasPrevious">Previous</button>
-        <button @click="next" :disabled="!hasNext">Next</button>
+        <button class="nav" @click="previous" :disabled="!hasPrevious">⬅️</button>
+        <NuxtLink :to="home" >🏠</NuxtLink>
+        <button class="nav" @click="next" :disabled="!hasNext">➡️</button>
       </div>
     </div>
   </main>
 </template>
 
 <script setup>
-const { init, next, previous, hasNext, hasPrevious, currentIndex } = useCards()
+const { init, next, previous, home, hasNext, hasPrevious, currentIndex } = useCards()
 
 const cardCounter = ref(0)
 

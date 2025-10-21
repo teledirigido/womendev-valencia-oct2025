@@ -1,10 +1,11 @@
 html {
   font-family: 20px;
+  background-color: #f1f1f1;
 }
 
 body {
   font-family: sans-serif;
-  font-size:21px;
+  font-size:18px;
   font-weight: 300;
 }
 
@@ -22,6 +23,9 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 300;
+  & code {
+    font-size:inherit;
+  }
 }
 
 .card {
@@ -31,9 +35,12 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 0.5rem;
   box-shadow: 0 20px 30px -10px #DDD;
   min-height: 200px;
+  margin-bottom: 2rem;
+  background-color: #FFF;
 
   & h2 a,
-  & h3 a {
+  & h3 a,
+  & h4 a {
     color:inherit;
     text-decoration: none;
   }
@@ -42,7 +49,8 @@ h1, h2, h3, h4, h5, h6 {
   & ol {
     padding-top: 1rem;
     li {
-      padding-bottom: 0.5rem;
+      padding-bottom: 0.75rem;
+      line-height: 165%;
     }
   }
 
@@ -54,6 +62,7 @@ h1, h2, h3, h4, h5, h6 {
     padding-block-start: 0;
     margin-block-start: 0;
     padding-top: 3rem;
+    line-height: 145%;
   }
 
   p > code,
@@ -62,7 +71,7 @@ h1, h2, h3, h4, h5, h6 {
     padding:0.2rem 0.5rem;
     display: inline-block;
     border-radius: 0.5rem;
-    font-size:1.1rem;
+    font-size:1rem;
   }
 
   .shiki {
@@ -73,13 +82,17 @@ h1, h2, h3, h4, h5, h6 {
     line-height:165%;
     font-family:'Courier New', Courier, monospace;
     border-radius:0.5rem;
+    overflow: scroll;
   }
 
+  pre + p {
+    padding-top: 2rem;
+  }
   figure {
     img {
       display: block;
       max-width: 100%;
-      border:1px solid #CCC;
+      /* border:1px solid #CCC; */
       /* box-shadow: 0 20px 30px -10px #DDD;    */
     }
     figcaption {
@@ -91,22 +104,47 @@ h1, h2, h3, h4, h5, h6 {
 
   table {
     width: 100%;
-    padding-bottom: 2rem;
+    /* padding-bottom: 1rem; */
+    margin-bottom: 2rem;
+    border:1px solid #C0C0C0;
+    border-collapse: collapse;;
     th {
       /* background-color:#f1f1f1; */
       text-align: left;
       border-bottoM:1px solid #CCC;
-      padding:1rem 0.5rem;
+      padding:1rem 0.75rem;
       font-weight: normal;
     }
-    td {
-      padding:0.5rem;
+    tr:nth-child(odd) td {
+      background-color:#f5f5f5;
     }
+    td {
+      padding:1rem 0.75rem;
+    }
+    code {
+      font-size:1rem;
+    }
+  }
+
+  details {
+    margin:2rem 0;
+    border-top:1px solid #CCC;
+    border-bottom:1px solid #CCC;
+    padding:1.5rem;
+    &:hover {
+      cursor: pointer;
+    }
+  }
+  hr {
+    display: block;
+    opacity:0.3;
+    margin:3rem 0;
   }
 }
 
 .lesson-footer {
   display: flex;
+  align-items: center;
   left:1rem;
   justify-content: space-between;
   position: fixed;
@@ -114,4 +152,34 @@ h1, h2, h3, h4, h5, h6 {
   right:1rem;
   font-size:18px;
   opacity:0.5;
+  transition: ease opacity 300ms;
+  &:hover {
+    opacity: 1;
+  }
+  .slides {
+    font-size:1rem;
+    color: #666;
+  }
+  .navigation {
+    display: flex;
+    gap:1rem;
+    align-items: center;
+    button {
+      appearance: none;
+      border:0 none;
+      font-size:1rem;
+      background-color:transparent;
+      &:hover {
+        cursor: pointer;
+        background-color: transparent;
+        color: #000;
+      }
+    }
+    button.nav {
+      background-color: #FFF;
+      padding:0.5rem 1rem;
+      display: inline-block;
+      border-radius:1000px;
+    }
+  }
 }

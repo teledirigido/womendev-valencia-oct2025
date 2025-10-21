@@ -4,12 +4,16 @@
 </template>
 
 <script setup>
+
+const route = useRoute();
+const { slug } = route.params;
+
 definePageMeta({
   layout: 'lesson'
 })
 
 const { data } = await useAsyncData(() =>
-  queryCollection('content').path('/lessons/intro-node-express').first()
+  queryCollection('content').path(`/lessons/${slug}`).first()
 )
 
 const resetCards = inject('resetCards', () => {})

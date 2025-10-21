@@ -31,6 +31,9 @@ export const useCards = () => {
   })
 
   const setupKeyboardNavigation = () => {
+    // Only run on client side
+    if (typeof window === 'undefined') return
+
     // Remove existing listener if any
     if (keydownHandler) {
       window.removeEventListener('keydown', keydownHandler)
@@ -54,8 +57,12 @@ export const useCards = () => {
     })
   }
 
-  // Call this once
-  setupKeyboardNavigation()
+  // Call this once (only on client side)
+  if (typeof window !== 'undefined') {
+    setupKeyboardNavigation()
+  }
+
+  const home = '/';
 
   const next = () => {
     if (currentIndex.value < totalCards.value - 1) {
@@ -74,6 +81,7 @@ export const useCards = () => {
 
   return {
     init,
+    home,
     next,
     previous,
     hasNext,
