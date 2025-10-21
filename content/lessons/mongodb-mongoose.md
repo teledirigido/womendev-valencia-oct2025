@@ -1148,7 +1148,7 @@ app.METHOD('/path', async (req, res) => {
 
 Puedes encontrar el código completo de esta lección en el siguiente repositorio:
 
-https://github.com/teledirigido/XXXXX
+https://github.com/teledirigido/express-mongodb-mongoose
 
 ¡Clona el repositorio y experimenta con el código!
 ::
