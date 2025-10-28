@@ -6,7 +6,7 @@ REST, acrónimo de **Transferencia de Estado Representacional**.
 Es un estilo de arquitectura web unificado para facilitar la comunicación entre sistemas en la web. 
 
 <figure>
-  <img src="/images/lessons/rest-introduction.webp">
+  <img src="/images/lessons/rest-introduction.webp" loading="lazy">
 </figure>
 
 ### Send HTTP Request

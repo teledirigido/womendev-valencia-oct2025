@@ -48,7 +48,7 @@ title: Lesson - Introduction to Node.js
 ### Pasos
 - Visita nodejs.org
 <figure>
-  <img src="/images/lessons/node-js-website.png" alt="Node.js website">
+  <img src="/images/lessons/node-js-website.png" alt="Node.js website" loading="lazy">
   <figcaption>https://nodejs.org</figcaption>
 </figure>
 

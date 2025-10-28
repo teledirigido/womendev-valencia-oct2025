@@ -358,7 +358,7 @@ Visita [postman.com](https://www.postman.com/downloads/) y descarga la aplicaci�
 6. ¡Verás la respuesta con todos los usuarios!
 
 <figure>
-  <img src="/images/lessons/postman.png" alt="Node.js website">
+  <img src="/images/lessons/postman.png" alt="Node.js website" loading="lazy">
 </figure>
 
 ### GET /users/:id
