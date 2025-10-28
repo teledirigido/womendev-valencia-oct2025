@@ -190,6 +190,7 @@ console.log(myColors.green('¡Sigue aprendiendo!'));
 # Require vs Import
 
 Node.js tiene dos formas de importar módulos: **CommonJS** (`require`) y **ES Modules** (`import`).
+A la fecha de hoy (Oct/2025) Require es la opción por defecto para importar modules.
 
 ## Usando `require` (CommonJS)
 
@@ -216,7 +217,7 @@ Luego puedes usar `import`:
 
 ```js
 // Sintaxis moderna de JavaScript
-import colors from 'colors/safe';
+import colors from 'colors/safe.js';
 
 console.log(colors.yellow('¡Hola WebDev Women Valencia!'));
 console.log(colors.magenta('Aprendiendo Node.js'));
@@ -273,7 +274,7 @@ Sube la receta `package.json`, no los ingredientes `/node_modules`
 ::
 
 ::card
-# Nodemon
+# Nodemon (Opcional)
 Nodemon es una herramienta que facilita el desarrollo con Node.js.
 
 La gran ventaja de Nodemon es que **reinicia automáticamente** la aplicación Node.js cuando detecta cambios en los archivos.
@@ -333,10 +334,34 @@ Crea una aplicación Node.js que muestre tu información personal con colores.
 
 1. Crea una carpeta llamada `mi-tarjeta-personal`
 2. Inicializa un proyecto npm con `npm init -y`
-3. Añade `"type": "module"` en tu `package.json` para usar ES Modules
+2. Instala el paquete de NPM colors:
+```bash
+npm install colors
+```
+Puedes leer más sobre la [documentación de este paquete aquí](https://www.npmjs.com/package/colors)
+
+4. Elige **Import** para ES Modules o **Require** como propiedades en `package.json`:  
+      1. A la fecha de hoy (Oct/2025) **Require** es la opción por defecto. Si no añades nada, Node.JS asume que utilizarás `require`.  Alternativamente podemos definir explicitamente el uso de commonJS `"type": "commonjs"`
+      ```js
+      // Ejemplo:
+      const colors = require('colors/safe');
+      ```
+      2. Para utilizar **Import** añade `"type": "module"`
+      ```js
+      // Ejemplo:
+      import colors from 'colors/safe.js';
+      ```
+
 4. Instala el paquete `colors` con `npm install colors`
 5. Crea un archivo `tarjeta.js`
-6. Usa `import` para importar colors: `import colors from 'colors/safe';`
+6. Añade el paquete de NPM a tu archivo `tarjeta.js`: 
+  ```js
+  // Utilizando CommonJS
+  const colors = require('colors/safe');
+  
+// Utilizando Import
+  import colors from 'colors/safe.js';
+  ```
 7. Escribe código que muestre:
    - Tu nombre (en color amarillo)
    - Tu ciudad (en color cyan)

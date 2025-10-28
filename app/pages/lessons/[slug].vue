@@ -12,7 +12,7 @@ definePageMeta({
   layout: 'lesson'
 })
 
-const { data } = await useAsyncData(() =>
+const { data } = await useAsyncData(`lesson-${slug}`, () =>
   queryCollection('content').path(`/lessons/${slug}`).first()
 )
 

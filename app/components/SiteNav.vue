@@ -25,7 +25,7 @@ const lessons = [
   },
   {
     link: '/lessons/practice-express-first-app',
-    title: 'Practica: Nuestra primera app en Express'
+    title: 'Práctica: Nuestra primera app en Express'
   },
   {
     link: '/lessons/express-rest-api',
@@ -41,11 +41,19 @@ const lessons = [
   },
   {
     link: '/lessons/practice-basic-routing',
-    title: 'Practica: CRUD API Completa'
+    title: 'Práctica: CRUD API Completa'
   },
   {
     link: '/lessons/mongodb-mongoose',
-    title: 'MongoDB & Mongoose'
+    title: 'Express, MongoDB & Mongoose'
+  },
+  {
+    link: '/lessons/practice-mini-project',
+    title: 'Review & Práctica: Express, MongoDB & Mongoose'
+  },
+  {
+    link: '/lessons/practice-mini-project-2',
+    title: 'Práctica: Express, MongoDB & Mongoose'
   }
 ]
 </script>
