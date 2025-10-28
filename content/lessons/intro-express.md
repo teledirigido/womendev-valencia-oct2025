@@ -15,6 +15,20 @@ Un Framework Web es un software diseñado para acelerar el desarrollo de aplicac
 # Creando nuestra primera aplicación en Express
 Veamos como construir una aplicación en Express simple.
 
+<details>
+<summary>
+Pasos pre-eliminares
+</summary>
+
+Antes de proceder, necesitamos revisar que los siguientes conceptos están aprendidos:
+
+1. Crear carpetas y archivos en nuestro editor IDE/Terminal y posicionarnos en la carpeta correcta.
+1. Entender como inicializar un proyecto con npm
+1. Saber como instalar un paquete de node utilizando algun repositorio (`yarn`, `npm`, `pnpm`, etc).
+1. Saber que es un archivo `package.json`
+</details>
+
+
 ## Paso 1: Configuración
 Crea una carpeta para el proyecto:
 ```bash
@@ -51,8 +65,13 @@ Después de ejecutar estos comandos, revisa tu `package.json`:
 
 ## Paso 3: Crear archivo .env
 Crea un archivo llamado `.env` en la raíz de tu proyecto:
-
 ```bash
+touch .env
+```
+
+Añade el siguiente contenido en tu archivo:
+```bash
+# .env
 PORT=3000
 ```
 
@@ -64,6 +83,12 @@ PORT=3000
 
 ## Paso 4: Crear app.js
 Crea un nuevo archivo llamado `app.js`:
+
+```bash
+touch app.js
+```
+
+Añade el siguiente contenido:
 
 ```js
 // app.js

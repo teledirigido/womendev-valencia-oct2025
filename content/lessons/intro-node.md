@@ -239,6 +239,11 @@ console.log(colors.magenta('Aprendiendo Node.js'));
 - **`require`**: Si trabajas con proyectos antiguos o necesitas máxima compatibilidad
 - **`import`**: Para proyectos nuevos (es el futuro de JavaScript)
 
+### Leer más
+
+- CommonJS Modules: https://nodejs.org/api/modules.html
+- ESM Modules: https://nodejs.org/api/esm.html
+
 ::
 
 ::card
