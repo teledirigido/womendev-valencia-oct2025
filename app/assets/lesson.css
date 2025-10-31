@@ -120,6 +120,7 @@ h1, h2, h3, h4, h5, h6 {
     }
     td {
       padding:1rem 0.75rem;
+      line-height: 145%;
     }
     code {
       font-size:1rem;
@@ -182,4 +183,14 @@ h1, h2, h3, h4, h5, h6 {
       border-radius:1000px;
     }
   }
+}
+
+details {
+  summary pre {
+    display: inline;
+    background-color: #f1f1f1;
+    padding:0.2rem 0.5rem;
+    border-radius:0.5rem;
+  }
+
 }

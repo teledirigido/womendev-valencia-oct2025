@@ -12,6 +12,118 @@ Un Framework Web es un software diseñado para acelerar el desarrollo de aplicac
 ::
 
 ::card
+# Variables de Entorno
+
+Las variables de entorno son valores de configuración que pueden cambiar dependiendo del entorno donde se ejecuta tu aplicación (desarrollo, producción, testing). 
+Estos valores se guardan en un archivo llamado `.env`
+
+## ¿Por qué usar .env?
+
+Los arhcivos `.env` son opcionales. 
+
+Si creamos un archivo de configuración externo, entonces las variables de configuración y otras potencialmente sensibles quedarán separadas
+de los archivos de trabajo
+
+**Sin .env** (hardcodeado):
+```js
+// app.js
+
+const PORT = 3000;  // ¿Qué pasa si en producción necesitas puerto 8080?
+const API_KEY = "mi-clave-secreta-123";  // ¡PELIGRO! Esto se subirá a GitHub
+```
+
+**Con .env** (configuración externa):
+
+```js
+// app.js
+
+const PORT = process.env.PORT || 3000;
+const API_KEY = process.env.API_KEY;  // Seguro, no se sube a Git
+```
+
+## Tipos de archivos .env
+
+Alguno de los archivos de configuración que podriamos encontrar en un proyecto son los siguientes
+
+|Archivo| en `.gitignore`|Uso|
+|-------|----------------|---|
+|`.env` | Si | Archivo de configuración. |
+|`.env.example`| No | Contiene las variables utilzadas con información referencial y no real. |
+|`.env.development`| Si | Archivo de configuración para un entorno de desarrollo o development. |
+|`.env.production`| Si | Archivo de configuración para un entorno de producción. |
+
+## Creando tu archivo .env
+
+1. Crea el archivo `.env` en la raíz de tu proyecto:
+```bash
+touch .env
+```
+
+2. Añade tus variables (sin espacios):
+```bash
+# .env
+
+PORT=3000
+NODE_ENV=development
+API_KEY=mi-clave-super-secreta
+DATABASE_URL=mongodb://localhost:27017/miapp
+```
+
+3. **IMPORTANTE**: Crea `.gitignore` y añade `.env`:
+
+Es una buena práctica de seguridad añadir el archivo `.env` a `.gitignore` porque puede alamacenar información sensible.
+
+```bash
+# .gitignore
+
+node_modules/
+.env # .env añadido :)
+*.log
+```
+
+## Usando variables de entorno
+
+```js
+import 'dotenv/config';  // Carga las variables del .env
+
+const PORT = process.env.PORT || 3000;
+const apiKey = process.env.API_KEY;
+
+console.log(`Server starting on port ${PORT}`);
+```
+
+## Ejemplo práctico: Diferentes entornos
+
+**Desarrollo (.env):**
+```bash
+PORT=3000
+NODE_ENV=development
+```
+
+**Producción (.env en el servidor):**
+```bash
+PORT=8080
+NODE_ENV=production
+```
+
+El mismo código funciona en ambos entornos porque lee de `process.env` 🎯
+
+## Reglas de oro
+
+✅ **SÍ subir a Git**: `.env.example` (plantilla sin valores reales)
+❌ **NO subir a Git**: `.env` (contiene datos sensibles)
+
+**Ejemplo de .env.example:**
+```bash
+PORT=3000
+NODE_ENV=development
+API_KEY=tu-clave-aqui
+```
+
+::
+
+
+::card
 # Creando nuestra primera aplicación en Express
 Veamos como construir una aplicación en Express simple.
 
@@ -62,8 +174,10 @@ Después de ejecutar estos comandos, revisa tu `package.json`:
 - `dependencies` - lista los paquetes que tu proyecto necesita
 - `express` - framework web para construir APIs
 - `dotenv` - carga variables de entorno desde el archivo .env
+::
 
-## Paso 3: Crear archivo .env
+::card
+# Paso 3: Crear archivo .env
 Crea un archivo llamado `.env` en la raíz de tu proyecto:
 ```bash
 touch .env
@@ -75,13 +189,18 @@ Añade el siguiente contenido en tu archivo:
 PORT=3000
 ```
 
-#### ¿Qué es .env?
+<details>
+<summary>Ventajas de tener un archivo <pre>.env</pre></summary>
+
 - Almacena variables de entorno (configuración)
-- Nunca lo subas a Git (añádelo a .gitignore)
+- No se sube a Git (añádelo a .gitignore)
 - Diferentes valores para desarrollo/producción
 - Mantiene datos sensibles (API keys, contraseñas) fuera del código
+</details>
+::
 
-## Paso 4: Crear app.js
+::card
+# Paso 4: Crear app.js
 Crea un nuevo archivo llamado `app.js`:
 
 ```bash
@@ -92,6 +211,7 @@ Añade el siguiente contenido:
 
 ```js
 // app.js
+
 import 'dotenv/config';
 import express from 'express';
 
@@ -108,8 +228,10 @@ app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/home`);
 });
 ```
+::
 
-## Paso 5: Ejecuta tu aplicación
+::card
+# Paso 5: Ejecuta tu aplicación
 
 Tienes dos opciones para ejecutar tu servidor:
 
@@ -137,89 +259,6 @@ Ambas opciones reinician automáticamente el servidor cuando guardas cambios en 
 - [Express Basic Routing](https://expressjs.com/en/starter/basic-routing.html)
 ::
 
-::card
-# Variables de Entorno y el archivo .env
-
-Las variables de entorno son valores de configuración que pueden cambiar dependiendo del entorno donde se ejecuta tu aplicación (desarrollo, producción, testing).
-
-## ¿Por qué usar .env?
-
-**Sin .env** (hardcodeado):
-```js
-const PORT = 3000;  // ¿Qué pasa si en producción necesitas puerto 8080?
-const API_KEY = "mi-clave-secreta-123";  // ¡PELIGRO! Esto se subirá a GitHub
-```
-
-**Con .env** (configuración externa):
-```js
-const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.API_KEY;  // Seguro, no se sube a Git
-```
-
-## Creando tu archivo .env
-
-1. Crea el archivo `.env` en la raíz de tu proyecto:
-```bash
-touch .env
-```
-
-2. Añade tus variables (sin espacios):
-```bash
-# .env
-PORT=3000
-NODE_ENV=development
-API_KEY=mi-clave-super-secreta
-DATABASE_URL=mongodb://localhost:27017/miapp
-```
-
-3. **IMPORTANTE**: Crea `.gitignore` y añade `.env`:
-```bash
-# .gitignore
-node_modules/
-.env
-*.log
-```
-
-## Usando variables de entorno
-
-```js
-import 'dotenv/config';  // Carga las variables del .env
-
-const PORT = process.env.PORT || 3000;
-const apiKey = process.env.API_KEY;
-
-console.log(`Server starting on port ${PORT}`);
-```
-
-## Ejemplo práctico: Diferentes entornos
-
-**Desarrollo (.env):**
-```bash
-PORT=3000
-NODE_ENV=development
-```
-
-**Producción (.env en el servidor):**
-```bash
-PORT=8080
-NODE_ENV=production
-```
-
-El mismo código funciona en ambos entornos porque lee de `process.env` 🎯
-
-## Reglas de oro
-
-✅ **SÍ subir a Git**: `.env.example` (plantilla sin valores reales)
-❌ **NO subir a Git**: `.env` (contiene datos sensibles)
-
-**Ejemplo de .env.example:**
-```bash
-PORT=3000
-NODE_ENV=development
-API_KEY=tu-clave-aqui
-```
-
-::
 
 ::card
 # Renderizando HTML
@@ -243,8 +282,10 @@ app.get('/', (request, response) => {
   response.send(html);
 });
 ```
+::
 
-## Sirviendo un Archivo HTML
+::card
+# Renderizando archivos HTML
 Para contenido HTML más grande esto se volverá difícil de mantener. Vamos a crear un archivo HTML separado.
 
 ### Paso 1
