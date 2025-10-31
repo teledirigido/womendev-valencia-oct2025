@@ -119,7 +119,7 @@ app.listen(3001, () => {
 3. El resultado debería ser el siguiente:
 
 <figure>
-  <img src="/images/lessons/express-primera-ruta.png" loading="lazy">
+  <img src="/images/lessons/express-primera-ruta.webp" loading="lazy">
   <figcaption>http://localhost:3001/users/123</figcaption>
 </figure>
 
@@ -222,7 +222,7 @@ const commentId = request.params.commentId;
 Antes de construir nuestra API de usuarios, vamos a aprender sobre Postman, la herramienta profesional para probar APIs.
 
 <figure>
-  <img src="/images/lessons/postman-logo.png" loading="lazy">
+  <img src="/images/lessons/postman-logo.webp" loading="lazy">
 </figure>
 
 ### ¿Qué es Postman?
@@ -413,7 +413,7 @@ Con tu servidor corriendo (`node app.js`), vamos a probar cada endpoint usando P
 6. ¡Verás la respuesta con todos los usuarios!
 
 <figure>
-  <img src="/images/lessons/postman.png" alt="Postman screenshot" loading="lazy">
+  <img src="/images/lessons/postman.webp" alt="Postman screenshot" loading="lazy">
 </figure>
 
 **Respuesta esperada:**
