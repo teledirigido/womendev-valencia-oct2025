@@ -3,7 +3,7 @@
 Express es un framework web rápido y minimalista para Node.js.
 
 <figure>
-  <img src="/images/lessons/express-website.png" alt="Node.js website" loading="lazy">
+  <img src="/images/lessons/express-website.webp" alt="Node.js website" loading="lazy">
   <figcaption>https://expressjs.com/</figcaption>
 </figure>
 
@@ -250,7 +250,7 @@ Ambas opciones reinician automáticamente el servidor cuando guardas cambios en 
 ¡Visita http://localhost:3000/home en tu navegador!
 
 <figure>
-  <img src="/images/lessons/express-first-app.png" alt="Tu primera app en express" loading="lazy">
+  <img src="/images/lessons/express-first-app.webp" alt="Tu primera app en express" loading="lazy">
   <figcaption>Tu primera app en express: <a target="_blank" href="http://localhost:8080/home">http://localhost:3000/home</a></figcaption>
 </figure>
 
