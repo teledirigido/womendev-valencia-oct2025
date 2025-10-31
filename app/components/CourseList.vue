@@ -3,8 +3,9 @@
     <div class="course-container--item" v-for="item in course">
       <span class="course-container--title">{{ item.title }}</span>
       <ul>
-        <li v-for="lesson in item.lessons">
+        <li v-for="lesson in item.lessons" :class="`item ${lesson.type ? `item-practica` : 'item-lesson'}`">
           <NuxtLink :to="lesson.link">
+            <span class="type">{{lesson.type ?? 'Lección'}}</span>
             {{ lesson.title }}
           </NuxtLink>
         </li>
@@ -33,6 +34,7 @@ const course = [
         title: 'Introducción a Express'
       },
       {
+        type: 'Práctica',
         link: '/lessons/practice-express-first-app',
         title: 'Práctica: Nuestra primera app en Express'
       }
@@ -59,6 +61,7 @@ const course = [
         title: 'Middlewares & Error Handling'
       },
       {
+        type: 'Práctica',
         link: '/lessons/practice-basic-routing',
         title: 'Práctica: CRUD API Completa'
       },
@@ -72,6 +75,7 @@ const course = [
         title: 'Express, MongoDB & Mongoose'
       },
       {
+        type: 'Práctica',
         link: '/lessons/practice-mini-project-2',
         title: 'Práctica: Express, MongoDB & Mongoose'
       },
@@ -113,7 +117,8 @@ const course = [
 
   li {
     a {
-      border: 1px solid #CCC;
+      border: 1px solid #273E4750;
+      background-color:#FFF;
       line-height: 145%;
       display: block;
       padding: 1.5rem;
@@ -121,20 +126,30 @@ const course = [
       color: inherit;
       font-family: 1rem;
       border-radius: 0.5rem;
-      transition: ease background-color 200ms;
-
+      transition: ease all 200ms;
+      top:0;
+      position: relative;
       &:hover {
-        background-color: #fff;
+        box-shadow: 0 10px 20px #DDD;
+        top: -2px;
       }
     }
 
-    span {
+    .type {
       display: block;
-      padding-bottom: 1rem;
-      font-size: 1rem;
-      opacity: 0.5;
+      font-size: 0.8rem;
       text-transform: uppercase;
       font-weight: bold;
+    }
+  }
+  .item-practica {
+    .type {
+      color: #BD632F;
+    }
+  }
+  .item-lesson {
+    .type {
+      color: #4459a3;
     }
   }
 }
