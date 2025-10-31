@@ -18,7 +18,7 @@
 <script setup>
 const course = [
   {
-    title: 'Day 1',
+    title: 'Día 1',
     lessons: [
       {
         link: '/lessons/intro-node',
@@ -27,7 +27,7 @@ const course = [
     ]
   },
   {
-    title: 'Day 2',
+    title: 'Día 2',
     lessons: [
       {
         link: '/lessons/intro-express',
@@ -41,7 +41,7 @@ const course = [
     ]
   },
   {
-    title: 'Day 3',
+    title: 'Día 3',
     lessons: [
       {
         link: '/lessons/express-rest-api',
@@ -54,7 +54,7 @@ const course = [
     ]
   },
   {
-    title: 'Day 4',
+    title: 'Día 4',
     lessons: [
       {
         link: '/lessons/middlewares-error-handling',
@@ -68,7 +68,7 @@ const course = [
     ]
   },
   {
-    title: 'Day 5',
+    title: 'Día 5',
     lessons: [
       {
         link: '/lessons/mongodb-mongoose',
@@ -82,7 +82,7 @@ const course = [
     ]
   },
   {
-    title: 'Day 6',
+    title: 'Día 6',
     lessons: [
       {
         link: '/lessons/practice-mini-project',
@@ -95,15 +95,13 @@ const course = [
 
 <style>
 .course-container {
-  padding: 2rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   row-gap: 5rem;
 
   .course-container--title {
-    font-weight: bold;
-    text-transform: uppercase;
+    font-size:1.2rem;
     color: #666;
   }
 
@@ -153,8 +151,9 @@ const course = [
     }
   }
 }
-@media all and (max-width: 850px) {
+@media all and (max-width: 960px) {
   .course-container {
+    padding:1.5rem;
     grid-template-columns: repeat(2, 1fr);
   }
 }

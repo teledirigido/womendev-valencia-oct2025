@@ -6,9 +6,9 @@
 
 <style>
 .site-header {
-  padding:1rem 0 0.5rem;
+  padding:1rem 0rem 4rem;
   & h1 {
-    font-size: 1.5rem;
+    font-size: 2rem;
   }
 }
 </style>
