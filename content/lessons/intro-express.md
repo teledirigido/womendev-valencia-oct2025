@@ -225,7 +225,7 @@ app.get('/home', (request, response) => {
 
 // Iniciar el servidor
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}/home`);
+  console.log(`Server running at http://localhost:${PORT}/`);
 });
 ```
 ::
@@ -261,7 +261,7 @@ Ambas opciones reinician automáticamente el servidor cuando guardas cambios en 
 
 
 ::card
-# Renderizando HTML
+# Renderizando HTML directo
 En lugar de enviar texto plano, vamos a crear una página HTML apropiada.
 
 ## Respuesta HTML Básica
@@ -285,7 +285,7 @@ app.get('/', (request, response) => {
 ::
 
 ::card
-# Renderizando archivos HTML
+# Renderizando HTML con archivos
 Para contenido HTML más grande esto se volverá difícil de mantener. Vamos a crear un archivo HTML separado.
 
 ### Paso 1
@@ -296,6 +296,7 @@ mkdir views
 
 ```html
 <!-- views/home.html -->
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -321,21 +322,61 @@ mkdir views
 ```
 
 ### Paso 2
-Actualiza `app.js` para servir el archivo:
+Vamos a actualizar `app.js` para servir el archivo:
+
+1. Vamos a importar fileURLToPath:
+
 ```js
+import { fileURLToPath } from 'url';
+```
+
+<details>
+<summary>Qué es <pre>fileURLToPath</pre>?</summary>
+
+`fileURLToPath` es una función que convierte URLs de archivos tipo `file://ruta/archivo.js` a rutas normales del sistema (`/ruta/archivo.js`). 
+
+La necesitamos porque en módulos ES6, Node.js maneja las rutas como URLs.
+</details>
+
+2. Añade la siguiente variable:
+
+```js
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+```
+
+<details>
+<summary>Qué es <pre>__dirname</pre>?</summary>
+
+`__dirname` es una variable que guarda la ruta completa de la carpeta donde está nuestro archivo actual. Usamos `import.meta.url` (que es la URL del archivo actual) y la convertimos a ruta del sistema para luego extraer solo la carpeta con `path.dirname()`. Esto nos permite acceder a archivos relativos a nuestro proyecto de forma confiable.
+
+</details>
+
+3. Vamos añadir la siguiente ruta:
+```js
+app.get('/', (request, response) => {
+  response.sendFile(path.join(__dirname, 'views', 'home.html'));
+});
+```
+
+### `app.js` actualizada:
+
+```js
+// app.js
+
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+const PORT = process.env.PORT || 3000;
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.get('/', (request, response) => {
-  response.sendFile(__dirname + '/views/home.html');
+  response.sendFile(path.join(__dirname, 'views', 'home.html'));
 });
 
-app.listen(3001, () => {
-  console.log('Server running at http://localhost:3001');
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
 });
 ```
 
@@ -344,7 +385,7 @@ Ejecuta la aplicación y visita http://localhost:3000
 ::
 
 ::card
-# Creando Nuestras Propias Rutas
+# Rutas en Express
 Las rutas definen cómo tu aplicación responde a las peticiones del cliente en endpoints específicos.
 
 ## Estructura Básica de una Ruta
