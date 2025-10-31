@@ -1,7 +1,6 @@
 <template>
   <main>
     <SiteHeader />
-    <SiteNav />
     <slot />
   </main>
 </template>

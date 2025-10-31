@@ -10,6 +10,7 @@
         </li>
       </ul>
     </div>
+
   </section>
 </template>
 
@@ -51,7 +52,7 @@ const course = [
     ]
   },
   {
-    title: 'Day 3',
+    title: 'Day 4',
     lessons: [
       {
         link: '/lessons/middlewares-error-handling',
@@ -64,7 +65,7 @@ const course = [
     ]
   },
   {
-    title: 'Day 4',
+    title: 'Day 5',
     lessons: [
       {
         link: '/lessons/mongodb-mongoose',
@@ -77,7 +78,7 @@ const course = [
     ]
   },
   {
-    title: 'Day 5',
+    title: 'Day 6',
     lessons: [
       {
         link: '/lessons/practice-mini-project',
@@ -90,7 +91,7 @@ const course = [
 
 <style>
 .course-container {
-  padding-top: 2rem;
+  padding: 2rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
@@ -135,6 +136,16 @@ const course = [
       text-transform: uppercase;
       font-weight: bold;
     }
+  }
+}
+@media all and (max-width: 850px) {
+  .course-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media all and (max-width: 650px) {
+  .course-container {
+    grid-template-columns: repeat(1, 1fr);
   }
 }
 </style>

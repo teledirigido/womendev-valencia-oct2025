@@ -1,9 +1,4 @@
 <template>
-
+  <CourseList />
+  <SiteLogos />
 </template>
-
-<script setup>
-definePageMeta({
-  layout: 'default'
-})
-</script>
