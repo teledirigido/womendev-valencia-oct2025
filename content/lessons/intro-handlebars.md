@@ -701,6 +701,7 @@ mi-app/
 ### Paso 2: Configurar Express con Handlebars
 ```js
 // app.js
+
 import 'dotenv/config';
 import express from 'express';
 import { engine } from 'express-handlebars';
@@ -717,6 +718,12 @@ const projects = JSON.parse(projectsData);
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', './views');
+
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}/`);
+});
+
+
 ```
 ::
 
@@ -826,9 +833,9 @@ app.get('/projects/:id', (req, res) => {
 ❌ Evitar `{{{variable}}}` con contenido de usuarios (riesgo XSS)
 
 ### Performance
-✅ Reutilizar partials
-✅ Pasar solo los datos necesarios a las vistas
-❌ No pasar objetos enormes sin filtrar
+✅ Reutilizar partials  
+✅ Pasar solo los datos necesarios a las vistas  
+❌ No pasar objetos enormes sin filtrar  
 ::
 
 ::card
