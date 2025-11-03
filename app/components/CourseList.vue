@@ -3,7 +3,7 @@
     <div class="course-container--item" v-for="item in course">
       <span class="course-container--title">{{ item.title }}</span>
       <ul>
-        <li v-for="lesson in item.lessons" :class="`item ${lesson.type ? `item-practica` : 'item-lesson'}`">
+        <li v-for="lesson in item.lessons" :class="['item', getLessonClass(lesson.type)]">
           <NuxtLink :to="lesson.link">
             <span class="type">{{lesson.type ?? 'Lección'}}</span>
             {{ lesson.title }}
@@ -16,6 +16,15 @@
 </template>
 
 <script setup>
+const getLessonClass = (type) => {
+  if (!type) return 'item-lesson';
+  
+  return 'item-' + type
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+};
+
 const course = [
   {
     title: 'Día 1',
@@ -44,52 +53,31 @@ const course = [
     title: 'Día 3',
     lessons: [
       {
-        link: '/lessons/express-rest-api',
-        title: 'Express & REST API'
+        link: '/lessons/intro-handlebars',
+        title: 'Express & Handlebars'
       },
       {
-        link: '/lessons/params-query-postman',
-        title: 'Route Params, Query & Postman'
-      },
+        type: 'Ayuda',
+        link: '/lessons/errores-comunes-handlebars-express',
+        title: 'Errores comunes on Handlebars & Express'
+      }
     ]
   },
   {
     title: 'Día 4',
     lessons: [
       {
-        link: '/lessons/middlewares-error-handling',
-        title: 'Middlewares & Error Handling'
+        title: 'LowDB I',
+        link: '/lessons/intro-lowdb'
       },
       {
-        type: 'Práctica',
-        link: '/lessons/practice-basic-routing',
-        title: 'Práctica: CRUD API Completa'
-      },
+        type: 'Ayuda',
+        title: 'Errores Comunes on LowDB',
+        link: '/lessons/errores-comunes-lowdb'
+      }
     ]
   },
-  {
-    title: 'Día 5',
-    lessons: [
-      {
-        link: '/lessons/mongodb-mongoose',
-        title: 'Express, MongoDB & Mongoose'
-      },
-      {
-        type: 'Práctica',
-        link: '/lessons/practice-mini-project-2',
-        title: 'Práctica: Express, MongoDB & Mongoose'
-      },
-    ]
-  },
-  {
-    title: 'Día 6',
-    lessons: [
-      {
-        link: '/lessons/practice-mini-project',
-        title: 'Review & Práctica: Express, MongoDB & Mongoose'
-      },
-    ]
-  }
+  
 ]
 </script>
 
@@ -148,6 +136,11 @@ const course = [
   .item-lesson {
     .type {
       color: #4459a3;
+    }
+  }
+  .item-ayuda {
+    .type {
+      color:#999;
     }
   }
 }
