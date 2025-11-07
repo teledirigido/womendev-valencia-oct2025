@@ -67,8 +67,16 @@ const course = [
     title: 'Día 4',
     lessons: [
       {
-        title: 'LowDB I',
+        title: 'LowDB I - Create & Read',
         link: '/lessons/intro-lowdb'
+      },
+      {
+        title: 'LowDB - Update',
+        link: '/lessons/intro-lowdb-update'
+      },
+      {
+        title: 'LowDB - Delete',
+        link: '/lessons/intro-lowdb-delete'
       },
       {
         type: 'Ayuda',
@@ -77,6 +85,19 @@ const course = [
       }
     ]
   },
+  {
+    title: 'Dìa 5',
+    lessons: [
+      {
+        title: 'CSS Frameworks and Methodologies',
+        link: '/lessons/css-frameworks-and-methodologies'
+      },
+      {
+        title: 'Express & Cloudinary',
+        link: '/lessons/express-cloudinary'
+      }
+    ]
+  }
   
 ]
 </script>

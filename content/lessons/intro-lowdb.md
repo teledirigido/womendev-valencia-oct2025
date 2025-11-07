@@ -25,7 +25,7 @@ app.get('/projects', (req, res) => {
 });
 ```
 
-**Problema:** Si reinicias el servidor y los datos se cambian, los cambios se pierden.
+**Problema:** Si reinicias el servidor, los cambios hechos se pierden.
 
 ## Forma 2: Archivos JSON estáticos
 ```js
@@ -50,6 +50,37 @@ LowDB te permite:
 | Fácil escritura | ✅ | ❌ | ✅ |
 | Fácil lectura | ✅ | ⚠️ | ✅ |
 | Para producción | ❌ | ❌ | ⚠️ (proyectos pequeños) |
+
+::
+
+::card
+# Esquema Cliente - Servidor - BBDD
+
+<figure>
+  <img src="/images/lessons/network-diagram-for-client-server.webp">
+</figure>
+::
+
+::card
+# CRUD - Operaciones básicas
+
+CRUD es un acrónimo que representa las cuatro operaciones fundamentales que puedes realizar con datos en una base de datos:
+
+## C - Create (Crear)
+Añadir nuevos registros a la base de datos.
+- Ejemplo: Crear un nuevo proyecto
+
+## R - Read (Leer)
+Obtener y mostrar datos existentes.
+- Ejemplo: Ver la lista de proyectos o ver los detalles de un proyecto
+
+## U - Update (Actualizar)
+Modificar registros existentes.
+- Ejemplo: Editar el título o estado de un proyecto
+
+## D - Delete (Eliminar)
+Borrar registros de la base de datos.
+- Ejemplo: Eliminar un proyecto que ya no necesitas
 ::
 
 ::card
@@ -64,7 +95,7 @@ npm install lowdb
 ```bash
 mi-proyecto/
 ├── app.js
-├── db.json          # Base de datos (se creará automáticamente)
+├── db.json # Base de datos (se creará automáticamente)
 ├── views/
 │   ├── layouts/
 │   │   └── main.handlebars
@@ -74,216 +105,6 @@ mi-proyecto/
 ```
 
 ### Paso 3: Crear archivo de base de datos inicial
-```json
-// db.json
-{
-  "projects": []
-}
-```
-
-**Nota:** Si el archivo no existe, LowDB lo creará automáticamente.
-::
-
-::card
-# Configurar LowDB en Express
-
-### Estructura básica con LowDB
-```js
-// app.js
-import 'dotenv/config';
-import express from 'express';
-import { engine } from 'express-handlebars';
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Configurar LowDB
-const adapter = new JSONFile('db.json');
-const db = new Low(adapter, { projects: [] });
-
-// Leer datos iniciales
-await db.read();
-
-// Configurar Handlebars
-app.engine('handlebars', engine());
-app.set('view engine', 'handlebars');
-app.set('views', './views');
-
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
-```
-
-### ¿Qué hace este código?
-1. `new JSONFile('db.json')` - Crea un adaptador para leer/escribir el archivo JSON
-2. `new Low(adapter, { projects: [] })` - Inicializa la base de datos con estructura por defecto
-3. `await db.read()` - Carga los datos del archivo a memoria
-::
-
-::card
-# Importante: Top-level await
-
-### Problema con ES Modules
-```js
-// ❌ Esto dará error
-const db = new Low(adapter, { projects: [] });
-await db.read(); // Error: await solo funciona en funciones async
-```
-
-### Solución 1: Usar función async (recomendado)
-```js
-// app.js
-import express from 'express';
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
-
-const app = express();
-const PORT = 3000;
-
-async function initializeApp() {
-  // Configurar base de datos
-  const adapter = new JSONFile('db.json');
-  const db = new Low(adapter, { projects: [] });
-  await db.read();
-
-  // Configurar rutas
-  app.get('/projects', async (req, res) => {
-    await db.read();
-    res.render('projects', { projects: db.data.projects });
-  });
-
-  // Iniciar servidor
-  app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  });
-}
-
-initializeApp();
-```
-
-### Solución 2: Top-level await (Node.js 14.8+)
-Asegúrate de tener `"type": "module"` en tu `package.json`:
-
-```json
-{
-  "type": "module"
-}
-```
-
-Entonces puedes usar `await` directamente:
-```js
-const db = new Low(adapter, { projects: [] });
-await db.read(); // ✅ Funciona con top-level await
-```
-::
-
-::card
-# Leer todos los registros (READ)
-
-### Obtener lista completa
-```js
-// app.js
-
-app.get('/projects', async (req, res) => {
-  // Leer datos actualizados de la base de datos
-  await db.read();
-
-  // Acceder a los proyectos
-  const projects = db.data.projects;
-
-  res.render('projects', {
-    projects: projects,
-    pageTitle: 'Mis Proyectos'
-  });
-});
-```
-
-### Vista Handlebars
-```handlebars
-<!-- views/projects.handlebars -->
-<h1>{{pageTitle}}</h1>
-
-{{#if projects.length}}
-  <ul>
-    {{#each projects}}
-      <li>
-        <h3>{{this.title}}</h3>
-        <p>{{this.description}}</p>
-        <span>Estado: {{this.status}}</span>
-        <a href="/projects/{{this.id}}">Ver detalles</a>
-      </li>
-    {{/each}}
-  </ul>
-{{else}}
-  <p>No hay proyectos todavía.</p>
-  <a href="/projects/new">Crear el primero</a>
-{{/if}}
-```
-
-### ¿Por qué `await db.read()` cada vez?
-Asegura que siempre trabajas con los datos más recientes del archivo.
-::
-
-::card
-# Leer un registro específico (READ by ID)
-
-### Buscar por ID
-```js
-app.get('/projects/:id', async (req, res) => {
-  await db.read();
-
-  const projectId = parseInt(req.params.id);
-  const project = db.data.projects.find(p => p.id === projectId);
-
-  if (project) {
-    res.render('project-detail', { project });
-  } else {
-    res.status(404).send('Proyecto no encontrado');
-  }
-});
-```
-
-### Vista de detalle
-```handlebars
-<!-- views/project-detail.handlebars -->
-<article>
-  <h1>{{project.title}}</h1>
-  <p>{{project.description}}</p>
-  <p>Estado: {{project.status}}</p>
-
-  <a href="/projects">← Volver a la lista</a>
-  <a href="/projects/{{project.id}}/edit">Editar</a>
-</article>
-```
-
-### Mejorando el manejo de errores
-```js
-app.get('/projects/:id', async (req, res) => {
-  await db.read();
-
-  const projectId = parseInt(req.params.id);
-  const project = db.data.projects.find(p => p.id === projectId);
-
-  if (!project) {
-    return res.status(404).render('404', {
-      message: 'Proyecto no encontrado'
-    });
-  }
-
-  res.render('project-detail', { project });
-});
-```
-::
-
-::card
-# Ejercicio Práctico: Mostrar lista de proyectos
-
-### Objetivo
-Crear una página que muestre todos los proyectos de la base de datos.
-
-### Paso 1: Añade datos de prueba
 ```json
 // db.json
 {
@@ -310,26 +131,172 @@ Crear una página que muestre todos los proyectos de la base de datos.
 }
 ```
 
-### Paso 2: Implementa la ruta
+**Nota:** Si el archivo no existe, LowDB creará un archivo vacío automáticamente.
+::
+
+::card
+
+# Handlebars Layout
+
+Vamos a crear ahora el layout principal `/views/main/main.handlebars`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <h1>Aprendiendo LowDB</h1>
+  <a href="/projects/new">
+    Crear Proyecto
+  </a>
+  {{{body}}}
+</body>
+</html>
+```
+
+::
+
+::card
+# Configurar LowDB en Express
+
+### Estructura básica con LowDB
 ```js
+// app.js
+import 'dotenv/config';
+import express from 'express';
+import { engine } from 'express-handlebars';
+import { Low } from 'lowdb';
+import { JSONFile } from 'lowdb/node';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Configurar LowDB
+const adapter = new JSONFile('db.json');
+const db = new Low(adapter, { projects: [] });
+
+// Leer datos iniciales
+await db.read();
+
+// Configurar carpeta public
+app.use(express.static('public'));
+
+// Configurar Handlebars
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
+app.set('views', './views');
+
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
+```
+
+### ¿Qué hace este código?
+1. `new JSONFile('db.json')` - Crea un adaptador para leer/escribir el archivo JSON
+2. `new Low(adapter, { projects: [] })` - Inicializa la base de datos con estructura por defecto
+3. `await db.read()` - Carga los datos del archivo a memoria
+::
+
+::card
+# Leer todos los registros (READ)
+
+### Obtener lista completa
+```js
+// app.js
+
 app.get('/projects', async (req, res) => {
+  // Leer datos actualizados de la base de datos
   await db.read();
+
+  // Acceder a los proyectos
+  const projects = db.data.projects;
+
   res.render('projects', {
-    projects: db.data.projects,
+    projects: projects,
     pageTitle: 'Mis Proyectos'
   });
 });
 ```
 
-### Paso 3: Crea la vista
-Usa la plantilla de Handlebars del ejemplo anterior.
+### Vista Handlebars
+```html
+<!-- views/projects.handlebars -->
+<h1>{{pageTitle}}</h1>
 
-### Paso 4: Prueba
-Visita http://localhost:3000/projects
+{{#if projects.length}}
+  <ul>
+    {{#each projects}}
+      <li>
+        <h3>{{this.title}}</h3>
+        <p>{{this.description}}</p>
+        <span>Estado: {{this.status}}</span>
+        <a href="/projects/{{this.id}}">Ver detalles</a>
+      </li>
+    {{/each}}
+  </ul>
+{{else}}
+  <p>No hay proyectos todavía.</p>
+  <a href="/projects/new">Crear el primero</a>
+{{/if}}
+```
 ::
 
 ::card
-# Formularios HTML - Repaso
+# Leer un registro específico (READ by ID)
+
+### Buscar por ID
+```js
+app.get('/projects/:id', async (req, res) => {
+  await db.read();
+
+  const projectId = parseInt(req.params.id);
+  const project = db.data.projects.find(p => p.id === projectId);
+
+  if (project) {
+    res.render('project-detail', { project });
+  } else {
+    res.status(404).send('Proyecto no encontrado');
+  }
+});
+```
+
+### Vista de detalle
+```html
+<!-- views/project-detail.handlebars -->
+<article>
+  <h1>{{project.title}}</h1>
+  <p>{{project.description}}</p>
+  <p>Estado: {{project.status}}</p>
+
+  <a href="/projects">← Volver a la lista</a>
+  <a href="/projects/{{project.id}}/edit">Editar</a>
+</article>
+```
+::
+
+::card
+# Crear nuevos registros (CREATE)
+
+Ahora que sabemos leer datos, vamos a aprender a crear nuevos registros.
+
+## ¿Qué necesitamos?
+
+Para crear datos desde una aplicación web necesitamos:
+
+1. **Formulario HTML** - Interfaz para que el usuario ingrese datos
+2. **Middleware de Express** - Para procesar datos del formulario
+3. **Ruta POST** - Para recibir y guardar los datos
+
+Vamos a ver cada parte paso a paso.
+::
+
+::card
+# Formularios HTML
 
 Para crear nuevos registros, necesitamos formularios HTML.
 
@@ -378,35 +345,263 @@ Para recibir datos de formularios, necesitas configurar Express.
 // ⚠️ IMPORTANTE: Añadir ANTES de las rutas
 app.use(express.urlencoded({ extended: true }));
 
-// Ahora puedes usar req.body en tus rutas
-app.post('/projects', async (req, res) => {
-  console.log(req.body); // { title: '...', description: '...', status: '...' }
+// resto del codigo y RUTAS ...
+
+```
+::
+
+::card
+# Mostrar el formulario de creación (CREATE)
+
+### Ruta para el formulario
+```js
+app.get('/projects/new', (req, res) => {
+  res.render('project-form', {
+    pageTitle: 'Nuevo Proyecto'
+  });
 });
 ```
 
-### ¿Qué hace este middleware?
-Convierte los datos del formulario HTML en un objeto JavaScript accesible en `req.body`.
+### Vista del formulario
+```html
+<!-- views/project-form.handlebars -->
+<h1>{{pageTitle}}</h1>
 
-### Ejemplo completo
+<form action="/projects" method="POST">
+  <div>
+    <label for="title">Título:</label>
+    <input
+      type="text"
+      id="title"
+      name="title"
+      required
+      placeholder="Ej: Mi Portfolio"
+    >
+  </div>
+
+  <div>
+    <label for="description">Descripción:</label>
+    <textarea
+      id="description"
+      name="description"
+      required
+      rows="5"
+      placeholder="Describe tu proyecto..."
+    ></textarea>
+  </div>
+
+  <div>
+    <label for="status">Estado:</label>
+    <select id="status" name="status" required>
+      <option value="">-- Selecciona un estado --</option>
+      <option value="planning">Planificación</option>
+      <option value="in-progress">En progreso</option>
+      <option value="completed">Completado</option>
+    </select>
+  </div>
+
+  <button type="submit">Crear Proyecto</button>
+  <a href="/projects">Cancelar</a>
+</form>
+```
+
+### Orden importante de las rutas
 ```js
-import express from 'express';
+// ORDEN CORRECTO
+app.get('/projects/new', (req, res) => { /* ... */ });  // Específica primero
+app.get('/projects/:id', (req, res) => { /* ... */ });  // General después
 
-const app = express();
+// ORDEN INCORRECTO
+app.get('/projects/:id', (req, res) => { /* ... */ });  // Captura "new" como ID
+app.get('/projects/new', (req, res) => { /* ... */ });  // Nunca se alcanza
+```
+::
 
-// Configurar body parser
-app.use(express.urlencoded({ extended: true }));
+::card
+# Estilos iniciales (CSS)
+```css
+/* Base */
+body {
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f5f5;
+  padding: 2rem;
+  margin: 0;
+}
 
-// Ruta para mostrar formulario
-app.get('/projects/new', (req, res) => {
-  res.render('project-form');
-});
+* {
+  box-sizing: border-box;
+}
 
-// Ruta para procesar formulario
-app.post('/projects', async (req, res) => {
-  const { title, description, status } = req.body;
-  console.log('Datos recibidos:', { title, description, status });
-  // Aquí crearemos el proyecto en la base de datos
-});
+h1 {
+  color: #2c3e50;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #ddd;
+}
+
+/* Lista de proyectos */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  background: #fff;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+ul li h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+ul li p {
+  color: #666;
+  margin: 0 0 1rem 0;
+}
+
+ul li a,
+ul li button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  margin-right: 0.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+ul li a {
+  background-color: #3498db;
+  color: #fff;
+}
+
+ul li a:hover {
+  background-color: #2980b9;
+}
+
+ul li button {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+ul li button:hover {
+  background-color: #c0392b;
+}
+
+/* Detalle de proyecto */
+article {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+article h1 {
+  border: none;
+  padding: 0;
+}
+
+article a,
+article button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  margin: 1rem 0.5rem 0 0;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+article a {
+  background-color: #3498db;
+  color: #fff;
+}
+
+article a:hover {
+  background-color: #2980b9;
+}
+
+article button {
+  background-color: #e74c3c;
+  color: #fff;
+}
+
+article button:hover {
+  background-color: #c0392b;
+}
+
+/* Formularios */
+form {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  max-width: 600px;
+}
+
+form div {
+  margin-bottom: 1rem;
+}
+
+form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+form input,
+form textarea,
+form select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+form input:focus,
+form textarea:focus,
+form select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+form button {
+  padding: 0.75rem 1.5rem;
+  background-color: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  font-family: inherit;
+}
+
+form button:hover {
+  background-color: #229954;
+}
+
+form a {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #95a5a6;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+form a:hover {
+  background-color: #7f8c8d;
+}
 ```
 ::
 
@@ -500,227 +695,6 @@ app.get('/projects', async (req, res) => {
 6. Si el usuario recarga (F5), solo repite el GET (seguro)
 ::
 
-::card
-# Mostrar formulario de creación
-
-### Ruta para el formulario
-```js
-app.get('/projects/new', (req, res) => {
-  res.render('project-form', {
-    pageTitle: 'Nuevo Proyecto'
-  });
-});
-```
-
-### Vista del formulario
-```handlebars
-<!-- views/project-form.handlebars -->
-<h1>{{pageTitle}}</h1>
-
-<form action="/projects" method="POST">
-  <div>
-    <label for="title">Título:</label>
-    <input
-      type="text"
-      id="title"
-      name="title"
-      required
-      placeholder="Ej: Mi Portfolio"
-    >
-  </div>
-
-  <div>
-    <label for="description">Descripción:</label>
-    <textarea
-      id="description"
-      name="description"
-      required
-      rows="5"
-      placeholder="Describe tu proyecto..."
-    ></textarea>
-  </div>
-
-  <div>
-    <label for="status">Estado:</label>
-    <select id="status" name="status" required>
-      <option value="">-- Selecciona un estado --</option>
-      <option value="planning">Planificación</option>
-      <option value="in-progress">En progreso</option>
-      <option value="completed">Completado</option>
-    </select>
-  </div>
-
-  <button type="submit">Crear Proyecto</button>
-  <a href="/projects">Cancelar</a>
-</form>
-```
-
-### Orden importante de las rutas
-```js
-// ⚠️ ORDEN CORRECTO
-app.get('/projects/new', (req, res) => { /* ... */ });  // Específica primero
-app.get('/projects/:id', (req, res) => { /* ... */ });  // General después
-
-// ❌ ORDEN INCORRECTO
-app.get('/projects/:id', (req, res) => { /* ... */ });  // Captura "new" como ID
-app.get('/projects/new', (req, res) => { /* ... */ });  // Nunca se alcanza
-```
-::
-
-::card
-# Práctica: Formulario de creación
-
-### Objetivo
-Crear un formulario funcional para añadir proyectos a la base de datos.
-
-### Paso 1: Añade las rutas
-```js
-// Mostrar formulario
-app.get('/projects/new', (req, res) => {
-  res.render('project-form', { pageTitle: 'Nuevo Proyecto' });
-});
-
-// Procesar formulario
-app.post('/projects', async (req, res) => {
-  await db.read();
-
-  const { title, description, status } = req.body;
-
-  const newId = db.data.projects.length > 0
-    ? Math.max(...db.data.projects.map(p => p.id)) + 1
-    : 1;
-
-  const newProject = {
-    id: newId,
-    title,
-    description,
-    status
-  };
-
-  db.data.projects.push(newProject);
-  await db.write();
-
-  res.redirect('/projects');
-});
-```
-
-### Paso 2: Crea la vista `project-form.handlebars`
-
-### Paso 3: Añade enlace en la lista
-```handlebars
-<!-- views/projects.handlebars -->
-<h1>Mis Proyectos</h1>
-<a href="/projects/new">+ Nuevo Proyecto</a>
-
-<!-- Lista de proyectos... -->
-```
-
-### Paso 4: Prueba
-1. Visita http://localhost:3000/projects/new
-2. Llena el formulario
-3. Envía
-4. Verifica que aparezca en la lista
-5. Revisa el archivo `db.json` - debe tener el nuevo registro
-::
-
-::card
-# Estructura del proyecto completa
-
-### Organización recomendada
-```bash
-mi-proyecto/
-├── app.js                      # Servidor principal
-├── db.json                     # Base de datos
-├── .env                        # Variables de entorno
-├── .gitignore                  # Archivos a ignorar
-├── package.json
-├── views/
-│   ├── layouts/
-│   │   └── main.handlebars     # Layout principal
-│   ├── projects.handlebars     # Lista de proyectos
-│   ├── project-detail.handlebars  # Detalle
-│   ├── project-form.handlebars    # Formulario
-│   └── 404.handlebars          # Página de error
-└── public/                     # Archivos estáticos (opcional)
-    └── styles.css
-```
-
-### Archivo .gitignore
-```bash
-# .gitignore
-node_modules/
-.env
-db.json          # Opcional: no subir datos de desarrollo
-*.log
-```
-
-### ¿Por qué no subir db.json?
-En desarrollo, cada desarrollador puede tener datos de prueba diferentes. En producción, la base de datos no debe estar en el repositorio.
-::
-
-::card
-# Inicializar datos por defecto
-
-### Problema
-Si `db.json` no existe o está vacío, la app puede fallar.
-
-### Solución: Datos por defecto
-```js
-// app.js
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
-
-// Datos por defecto
-const defaultData = {
-  projects: [
-    {
-      id: 1,
-      title: 'Proyecto de ejemplo',
-      description: 'Este es un proyecto de prueba',
-      status: 'completed'
-    }
-  ]
-};
-
-// Inicializar base de datos
-const adapter = new JSONFile('db.json');
-const db = new Low(adapter, defaultData);
-
-// Leer datos (si el archivo no existe, usa defaultData)
-await db.read();
-
-// Si está vacío, inicializar con datos por defecto
-if (!db.data || !db.data.projects) {
-  db.data = defaultData;
-  await db.write();
-  console.log('Base de datos inicializada con datos por defecto');
-}
-```
-
-### Mejor práctica: Función helper
-```js
-async function initializeDatabase() {
-  const adapter = new JSONFile('db.json');
-  const db = new Low(adapter, { projects: [] });
-
-  await db.read();
-
-  // Si no hay proyectos, añadir ejemplos
-  if (db.data.projects.length === 0) {
-    db.data.projects = [
-      { id: 1, title: 'Ejemplo 1', description: 'Descripción', status: 'completed' },
-      { id: 2, title: 'Ejemplo 2', description: 'Descripción', status: 'in-progress' }
-    ];
-    await db.write();
-  }
-
-  return db;
-}
-
-// Usar en la app
-const db = await initializeDatabase();
-```
-::
 
 ::card
 # Manejo de errores
@@ -804,99 +778,94 @@ app.post('/projects', async (req, res) => {
 ::
 
 ::card
-# Ejemplo completo: app.js
+# Siguientes pasos: UPDATE y DELETE
 
+Ahora que dominas las operaciones de **lectura (READ)** y **creación (CREATE)**, es momento de completar el CRUD con las operaciones restantes:
+
+## UPDATE (Actualizar)
+Aprende a editar proyectos existentes:
+- Crear formularios de edición prellenados
+- Actualizar registros en la base de datos
+- Usar el spread operator para mantener datos existentes
+
+Continúa en la siguiente lección: **LowDB - Update**
+
+
+## DELETE (Eliminar)
+Aprende a eliminar proyectos:
+- Añadir botones de eliminación
+- Confirmar antes de eliminar
+- Usar `splice()` o `filter()` para eliminar registros
+
+Continúa en la siguiente lección: **LowDB - Delete**
+
+::
+
+::card
+# CRUD completo - Resumen de rutas
+
+### Todas las rutas necesarias
 ```js
-// app.js
-import 'dotenv/config';
-import express from 'express';
-import { engine } from 'express-handlebars';
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
+// CREATE - Mostrar formulario
+app.get('/projects/new', (req, res) => {
+  res.render('project-form', { pageTitle: 'Nuevo Proyecto' });
+});
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+// CREATE - Procesar formulario
+app.post('/projects', async (req, res) => {
+  await db.read();
+  // Crear proyecto...
+  await db.write();
+  res.redirect('/projects');
+});
 
-// Configurar LowDB
-const adapter = new JSONFile('db.json');
-const db = new Low(adapter, { projects: [] });
-await db.read();
-
-// Configurar Handlebars
-app.engine('handlebars', engine());
-app.set('view engine', 'handlebars');
-app.set('views', './views');
-
-// Middleware
-app.use(express.urlencoded({ extended: true }));
-
-// RUTAS
-
-// Lista de proyectos
+// READ - Lista completa
 app.get('/projects', async (req, res) => {
   await db.read();
-  res.render('projects', {
-    projects: db.data.projects,
-    pageTitle: 'Mis Proyectos'
-  });
+  res.render('projects', { projects: db.data.projects });
 });
 
-// Formulario nuevo proyecto
-app.get('/projects/new', (req, res) => {
-  res.render('project-form', {
-    pageTitle: 'Nuevo Proyecto'
-  });
-});
-
-// Detalle de proyecto
+// READ - Un proyecto específico
 app.get('/projects/:id', async (req, res) => {
   await db.read();
-
-  const projectId = parseInt(req.params.id);
-  const project = db.data.projects.find(p => p.id === projectId);
-
-  if (!project) {
-    return res.status(404).render('404', {
-      message: 'Proyecto no encontrado'
-    });
-  }
-
+  const project = db.data.projects.find(p => p.id === parseInt(req.params.id));
   res.render('project-detail', { project });
 });
 
-// Crear proyecto
-app.post('/projects', async (req, res) => {
-  try {
-    await db.read();
-
-    const { title, description, status } = req.body;
-
-    const newId = db.data.projects.length > 0
-      ? Math.max(...db.data.projects.map(p => p.id)) + 1
-      : 1;
-
-    const newProject = {
-      id: newId,
-      title,
-      description,
-      status,
-      createdAt: new Date().toISOString()
-    };
-
-    db.data.projects.push(newProject);
-    await db.write();
-
-    res.redirect('/projects');
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).send('Error al crear proyecto');
-  }
+// UPDATE - Mostrar formulario de edición
+app.get('/projects/:id/edit', async (req, res) => {
+  await db.read();
+  const project = db.data.projects.find(p => p.id === parseInt(req.params.id));
+  res.render('project-edit', { project });
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+// UPDATE - Procesar actualización
+app.post('/projects/:id', async (req, res) => {
+  await db.read();
+  // Actualizar proyecto...
+  await db.write();
+  res.redirect(`/projects/${req.params.id}`);
 });
+
+// DELETE - Eliminar proyecto
+app.post('/projects/:id/delete', async (req, res) => {
+  await db.read();
+  // Eliminar proyecto...
+  await db.write();
+  res.redirect('/projects');
+});
+```
+
+### Orden correcto de las rutas
+```js
+// ✅ Específicas primero
+app.get('/projects/new', ...)      // Literal "new"
+app.get('/projects/:id/edit', ...) // Literal "edit"
+app.get('/projects/:id', ...)      // Parámetro dinámico
+
+// ❌ Incorrecto (/:id captura todo)
+app.get('/projects/:id', ...)
+app.get('/projects/new', ...)      // Nunca se alcanza
 ```
 ::
 
@@ -910,18 +879,36 @@ app.listen(PORT, () => {
 - Perfecta para aprender y prototipar
 - Los datos persisten entre reinicios del servidor
 
-**Operaciones básicas:**
+**Operaciones CRUD completas:**
 ```js
-// Leer
-await db.read();
-const projects = db.data.projects;
-
-// Crear
+// CREATE - Crear
 db.data.projects.push(newProject);
 await db.write();
+```
 
-// Buscar
+```js
+// READ - Leer todos
+await db.read();
+const projects = db.data.projects;
+```
+
+```js
+// READ - Buscar uno
 const project = db.data.projects.find(p => p.id === id);
+```
+
+```js
+// UPDATE - Actualizar
+const index = db.data.projects.findIndex(p => p.id === id);
+db.data.projects[index] = { ...db.data.projects[index], ...updates };
+await db.write();
+```
+
+```js
+// DELETE - Eliminar
+const index = db.data.projects.findIndex(p => p.id === id);
+db.data.projects.splice(index, 1);
+await db.write();
 ```
 
 **Express + LowDB:**
@@ -931,11 +918,14 @@ const project = db.data.projects.find(p => p.id === id);
 
 **Estructura típica:**
 ```js
+
+// Muestra la página para crear un recurso
 app.get('/resource', async (req, res) => {
   await db.read();
   res.render('view', { data: db.data.resource });
 });
 
+// Crear un recurso en la base de datos
 app.post('/resource', async (req, res) => {
   await db.read();
   // Crear recurso
@@ -944,9 +934,4 @@ app.post('/resource', async (req, res) => {
 });
 ```
 
-### Próximos pasos:
-En la siguiente lección (Día 5) aprenderemos a:
-- Actualizar registros (UPDATE)
-- Eliminar registros (DELETE)
-- Completar el CRUD completo
 ::
