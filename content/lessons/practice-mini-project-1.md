@@ -1,5 +1,5 @@
 ---
-title: Práctica: Express Mini-Project - Travel Reviews
+title: Práctica - Express Mini-Project - Travel Reviews
 ---
 
 ::card

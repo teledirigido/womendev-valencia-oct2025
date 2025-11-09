@@ -45,7 +45,7 @@ const course = [
       {
         type: 'Práctica',
         link: '/lessons/practice-express-first-app',
-        title: 'Práctica: Nuestra primera app en Express'
+        title: 'Nuestra primera APP'
       }
     ]
   },
@@ -99,6 +99,11 @@ const course = [
       {
         title: 'Estructura de un proyecto en Express',
         link: '/lessons/express-project-structure'
+      },
+      {
+        type: 'Práctica',
+        title: 'Travel Reviews',
+        link: '/lessons/practice-mini-project-1'
       }
     ]
   }
