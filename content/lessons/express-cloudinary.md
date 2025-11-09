@@ -49,8 +49,8 @@ Una vez dentro del dashboard:
    - **API Key:** Clave pública
    - **API Secret:** Clave privada (¡no la compartas!)
 
-```
 Cloud Name: mi-cuenta
+```bash
 API Key: 123456789012345
 API Secret: abcdefghijklmnopqrstuvwxyz123
 ```
@@ -79,9 +79,32 @@ npm install multer
 ::card
 # Configurar Cloudinary en Express
 
-## Paso 1: Configurar variables de entorno
+<details>
+<summary>Configuración inicial del proyecto</summary>
 
-Añade tus credenciales al archivo `.env`:
+1. Inicializar proyecto
+```bash
+npm init -y
+```
+
+2. Instalar dependencias
+```bash
+npm install express cloudinary multer dotenv lowdb express-handlebars
+```
+
+3. Asegurate que el valor de `type` es `module` en el archivo `package.json`: 
+
+```js
+// package.json
+"type": "module"
+```
+
+
+</details>
+
+### Paso 1: Configurar variables de entorno
+
+Crea un archivo `.env` en la raíz del proyecto con tus credenciales:
 
 ```bash
 # .env
@@ -90,7 +113,15 @@ CLOUDINARY_API_KEY=tu-api-key
 CLOUDINARY_API_SECRET=tu-api-secret
 ```
 
-## Paso 2: Configurar en app.js
+### Paso 2: Crear un archivo `db.json`
+
+```json
+{
+  "places": []
+}
+```
+
+### Paso 3: Crear un archivo `app.js`
 
 ```js
 // app.js
@@ -102,7 +133,7 @@ import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 
 // Configurar Cloudinary
 cloudinary.config({
@@ -113,22 +144,75 @@ cloudinary.config({
 
 // Configurar LowDB
 const adapter = new JSONFile('db.json');
-const db = new Low(adapter, { projects: [] });
+const db = new Low(adapter, { places: [] });
 await db.read();
-
-// Middlewares
-app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
 
 // Configurar Handlebars
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
+// Middlewares
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+
+// Ruta principal - mostrar lista de lugares
+app.get('/', async (req, res) => {
+  await db.read();
+  res.render('home', {
+    places: db.data.places
+  });
+});
+
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor en http://localhost:${PORT}`);
 });
 ```
+
+Usaremos `places` (lugares) donde cada lugar tendrá:
+- `title`: Nombre del lugar
+- `imageUrl`: URL de la imagen en Cloudinary
+
+## Generar ID automáticas
+
+Anteriormente hemos generado ID de la siguiente forma:
+
+```js
+const newId = db.data.projects.length > 0
+    ? Math.max(...db.data.projects.map(p => p.id)) + 1
+    : 1;
+```
+
+Al momento de crear un nuevo recurso:
+
+```js
+const newResource = {
+  id: newId,
+  title,
+  description,
+  createdAt: new Date().toISOString()
+};
+```
+
+Podemos utilizar también la función `crypto.randomUUID()` de Node.JS:
+
+1. Importaremos crypto en `app.js`
+
+```js
+import crypto from 'crypto';
+```
+
+Al momento de crear un nuevo recurso:
+```js
+const newResource = {
+  id: crypto.randomUUID(),
+  title,
+  description,
+  createdAt: new Date().toISOString()
+};
+```
+
+Esta es una forma alternativa de generar un identificador único.
 
 ::
 
@@ -137,14 +221,17 @@ app.listen(PORT, () => {
 
 Multer nos permite procesar archivos desde formularios.
 
-## Crear configuración de Multer
+## Crear archivo de configuración
+
+Creamos un archivo separado en `config/multer.js` para organizar mejor nuestro código:
 
 ```js
-// app.js (añadir después de los imports)
+// config/multer.js
 import multer from 'multer';
 
 // Configurar Multer para guardar en memoria temporalmente
 const storage = multer.memoryStorage();
+
 const upload = multer({
   storage: storage,
   limits: {
@@ -159,110 +246,108 @@ const upload = multer({
     }
   }
 });
+
+export default upload;
 ```
 
-### ¿Qué hace este código?
+## Importar en `app.js`
+
+```js
+import upload from './config/multer.js';
+```
+
+¿Qué hace este código?
 
 - `memoryStorage()`: Guarda el archivo en memoria (RAM) temporalmente
 - `limits`: Establece tamaño máximo de 5MB
 - `fileFilter`: Solo acepta archivos de tipo imagen
 
+### Ventajas de separar la configuración
+
+- **Organización:** Código más limpio y modular
+- **Reutilización:** Puedes importar `upload` en múltiples archivos
+- **Mantenimiento:** Más fácil de modificar en un solo lugar
+
 ::
 
 ::card
-# Actualizar el formulario para subir imágenes
 
-Modificamos el formulario de creación para incluir un campo de imagen.
+# Vistas
 
-```handlebars
-<!-- views/project-form.handlebars -->
-<div class="max-w-2xl mx-auto p-6">
-  <h1 class="text-3xl font-bold text-gray-800 mb-6">{{pageTitle}}</h1>
 
-  <!-- IMPORTANTE: añadir enctype -->
-  <form
-    action="/projects"
-    method="POST"
-    enctype="multipart/form-data"
-    class="bg-white p-8 rounded-lg border border-gray-200"
-  >
-    <div class="mb-6">
-      <label for="title" class="block text-gray-700 font-semibold mb-2">
-        Título:
-      </label>
-      <input
-        type="text"
-        id="title"
-        name="title"
-        required
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-    </div>
+<details>
+<summary>Crea el archivo <pre>views/layouts/main.handlebars</summary> si no existe.
 
-    <div class="mb-6">
-      <label for="description" class="block text-gray-700 font-semibold mb-2">
-        Descripción:
-      </label>
-      <textarea
-        id="description"
-        name="description"
-        required
-        rows="5"
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-      ></textarea>
-    </div>
-
-    <!-- NUEVO: Campo de imagen -->
-    <div class="mb-6">
-      <label for="image" class="block text-gray-700 font-semibold mb-2">
-        Imagen del proyecto:
-      </label>
-      <input
-        type="file"
-        id="image"
-        name="image"
-        accept="image/*"
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-      <p class="text-gray-500 text-sm mt-1">Opcional - Máximo 5MB</p>
-    </div>
-
-    <div class="mb-6">
-      <label for="status" class="block text-gray-700 font-semibold mb-2">
-        Estado:
-      </label>
-      <select
-        id="status"
-        name="status"
-        required
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">-- Selecciona un estado --</option>
-        <option value="planning">Planificación</option>
-        <option value="in-progress">En progreso</option>
-        <option value="completed">Completado</option>
-      </select>
-    </div>
-
-    <div class="flex gap-3">
-      <button
-        type="submit"
-        class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
-      >
-        Crear Proyecto
-      </button>
-      <a
-        href="/projects"
-        class="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition"
-      >
-        Cancelar
-      </a>
-    </div>
-  </form>
-</div>
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <title>Document</title>
+</head>
+<body>
+  {{{body}}}
+</body>
+</html>
 ```
 
-### Cambios importantes:
+</details>
+
+## Vista 
+
+Vamos a crear la vista del home en `views/home.handlebars`
+
+```html
+<!-- views/home.handlebars -->
+<h1>Mis Lugares</h1>
+
+<!-- IMPORTANTE: añadir enctype="multipart/form-data" -->
+<form action="/places" method="POST" enctype="multipart/form-data">
+  <fieldset>  
+    <label for="title">Nombre del lugar:</label>
+    <input
+      type="text"
+      id="title"
+      name="title"
+      required
+      placeholder="Ej: Torre Eiffel"
+    >
+    <label for="image">Imagen:</label>
+    <input
+      type="file"
+      id="image"
+      name="image"
+      accept="image/*"
+      required
+    >
+    <small>Máximo 5MB</small>
+  </fieldset>
+  <button type="submit">Subir Lugar</button>
+</form>
+
+<hr>
+
+<h2>Lugares guardados</h2>
+
+{{#if places.length}}
+  {{#each places}}
+    <div>
+      <h3>{{this.title}}</h3>
+      <a href="/places/{{this.id}}/edit">Editar</a> <!-- Link para editar -->
+      <img src="{{this.imageUrl}}" alt="{{this.title}}" width="300">
+      <form action="/places/{{this.id}}/delete" method="POST" style="display: inline;">
+        <button type="submit" onclick="return confirm('¿Eliminar este lugar?')">Eliminar</button> <!-- Botón para eliminar -->
+      </form>
+    </div>
+  {{/each}}
+{{else}}
+  <p>No hay lugares aún.</p>
+{{/if}}
+```
+
+### Elementos importantes:
 
 1. `enctype="multipart/form-data"` - Necesario para enviar archivos
 2. `<input type="file">` - Campo para seleccionar imagen
@@ -273,59 +358,45 @@ Modificamos el formulario de creación para incluir un campo de imagen.
 ::card
 # Subir imagen a Cloudinary
 
-Actualizamos la ruta POST para procesar y subir la imagen.
+Creamos la ruta POST para procesar y subir la imagen.
 
 ```js
 // app.js
 
-app.post('/projects', upload.single('image'), async (req, res) => {
+app.post('/places', upload.single('image'), async (req, res) => {
   try {
     await db.read();
 
-    const { title, description, status } = req.body;
+    const { title } = req.body;
 
-    // Generar ID único
-    const newId = db.data.projects.length > 0
-      ? Math.max(...db.data.projects.map(p => p.id)) + 1
-      : 1;
+    // Convertir el buffer a base64
+    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    const dataURI = `data:${req.file.mimetype};base64,${b64}`;
 
-    // Crear objeto del proyecto
-    const newProject = {
-      id: newId,
+    // Subir a Cloudinary
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder: 'places',
+      resource_type: 'auto'
+    });
+
+    // Crear objeto del lugar
+    const newPlace = {
+      id: crypto.randomUUID(),
       title,
-      description,
-      status,
+      imageUrl: result.secure_url,
+      imagePublicId: result.public_id,
       createdAt: new Date().toISOString()
     };
 
-    // Si hay imagen, subirla a Cloudinary
-    if (req.file) {
-      // Convertir el buffer a base64
-      const b64 = Buffer.from(req.file.buffer).toString('base64');
-      const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-
-      // Subir a Cloudinary
-      const result = await cloudinary.uploader.upload(dataURI, {
-        folder: 'projects', // Carpeta en Cloudinary
-        resource_type: 'auto'
-      });
-
-      // Guardar la URL de la imagen
-      newProject.imageUrl = result.secure_url;
-      newProject.imagePublicId = result.public_id; // Para poder eliminarla después
-    }
-
     // Añadir a la base de datos
-    db.data.projects.push(newProject);
+    db.data.places.push(newPlace);
     await db.write();
 
-    res.redirect('/projects');
+    res.redirect('/');
 
   } catch (error) {
-    console.error('Error al crear proyecto:', error);
-    res.status(500).render('error', {
-      message: 'Error al crear el proyecto'
-    });
+    console.error('Error al crear lugar:', error);
+    res.status(500).send('Error al subir la imagen');
   }
 });
 ```
@@ -336,254 +407,183 @@ app.post('/projects', upload.single('image'), async (req, res) => {
 2. `req.file`: Contiene la información del archivo subido
 3. Convertimos el archivo a base64 (formato que acepta Cloudinary)
 4. `cloudinary.uploader.upload()`: Sube la imagen a Cloudinary
-5. Guardamos `secure_url` (URL de la imagen) y `public_id` (ID para eliminar)
+5. `crypto.randomUUID()`: Genera un ID único para el lugar
+6. Guardamos `secure_url` (URL de la imagen) y `public_id` (ID para eliminar)
 
 ::
 
 ::card
-# Mostrar imágenes en las vistas
+# Editar recursos con imágenes
 
-## En la lista de proyectos
+Cuando actualizamos un recurso que tiene una imagen, tenemos dos escenarios:
 
-```handlebars
-<!-- views/projects.handlebars -->
-<div class="max-w-4xl mx-auto p-6">
-  <h1 class="text-3xl font-bold text-gray-800 mb-6">{{pageTitle}}</h1>
+1. **El usuario sube una nueva imagen** → Eliminar la antigua de Cloudinary y subir la nueva
+2. **El usuario NO sube imagen** → Mantener la imagen existente
 
-  {{#if projects.length}}
-    <div class="space-y-4">
-      {{#each projects}}
-        <div class="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-lg transition">
+## Vista de edición
 
-          <!-- Mostrar imagen si existe -->
-          {{#if this.imageUrl}}
-            <img
-              src="{{this.imageUrl}}"
-              alt="{{this.title}}"
-              class="w-full h-48 object-cover rounded-lg mb-4"
-            >
-          {{/if}}
+Primero, creamos un formulario de edición en `views/edit.handlebars`:
 
-          <h3 class="text-xl font-semibold text-gray-800 mb-2">
-            {{this.title}}
-          </h3>
+```html
+<!-- views/edit.handlebars -->
+<h1>Editar Lugar</h1>
 
-          <p class="text-gray-600 mb-4">
-            {{this.description}}
-          </p>
+<form action="/places/{{place.id}}/edit" method="POST" enctype="multipart/form-data">
+  <fieldset>
+    <label for="title">Nombre del lugar:</label>
+    <input
+      type="text"
+      id="title"
+      name="title"
+      value="{{place.title}}"
+      required
+    >
 
-          <span class="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm mb-4">
-            Estado: {{this.status}}
-          </span>
+    <label>Imagen actual:</label>
+    <img src="{{place.imageUrl}}" alt="{{place.title}}" width="200">
 
-          <div class="flex gap-2">
-            <a
-              href="/projects/{{this.id}}"
-              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-            >
-              Ver detalles
-            </a>
-          </div>
-        </div>
-      {{/each}}
-    </div>
-  {{/if}}
-</div>
+    <label for="image">Cambiar imagen (opcional):</label>
+    <input
+      type="file"
+      id="image"
+      name="image"
+      accept="image/*"
+    >
+    <small>Si no seleccionas una imagen, se mantendrá la actual</small>
+  </fieldset>
+
+  <button type="submit">Actualizar</button>
+  <a href="/">Cancelar</a>
+</form>
 ```
 
-## En el detalle del proyecto
-
-```handlebars
-<!-- views/project-detail.handlebars -->
-<div class="max-w-4xl mx-auto p-6">
-  <article class="bg-white p-8 rounded-lg border border-gray-200">
-
-    <!-- Imagen destacada -->
-    {{#if project.imageUrl}}
-      <img
-        src="{{project.imageUrl}}"
-        alt="{{project.title}}"
-        class="w-full h-96 object-cover rounded-lg mb-6"
-      >
-    {{/if}}
-
-    <h1 class="text-3xl font-bold text-gray-800 mb-4">
-      {{project.title}}
-    </h1>
-
-    <p class="text-gray-600 text-lg mb-4">
-      {{project.description}}
-    </p>
-
-    <p class="text-gray-500 mb-6">
-      Estado: {{project.status}}
-    </p>
-
-    <div class="flex gap-3">
-      <a
-        href="/projects"
-        class="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-      >
-        ← Volver a la lista
-      </a>
-
-      <a
-        href="/projects/{{project.id}}/edit"
-        class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-      >
-        Editar
-      </a>
-
-      <form action="/projects/{{project.id}}/delete" method="POST" class="inline">
-        <button
-          type="submit"
-          class="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-          onclick="return confirm('¿Estás seguro de eliminar este proyecto?')"
-        >
-          Eliminar
-        </button>
-      </form>
-    </div>
-  </article>
-</div>
-```
-
-### Clases de Tailwind para imágenes:
-
-- `w-full`: Ancho 100%
-- `h-48`: Altura fija de 12rem (en lista)
-- `h-96`: Altura fija de 24rem (en detalle)
-- `object-cover`: Recorta la imagen para llenar el espacio
-- `rounded-lg`: Bordes redondeados
-
-::
-
-::card
-# Transformaciones de Cloudinary
-
-Cloudinary permite transformar imágenes on-the-fly modificando la URL.
-
-## URL original de Cloudinary
-
-```
-https://res.cloudinary.com/mi-cuenta/image/upload/v1234567890/projects/abc123.jpg
-```
-
-## Transformaciones en la URL
-
-Añadimos parámetros entre `/upload/` y el path de la imagen:
-
-```
-https://res.cloudinary.com/mi-cuenta/image/upload/w_500,h_300,c_fill/v1234567890/projects/abc123.jpg
-                                                    ^^^^^^^^^^^^^ transformaciones
-```
-
-### Ejemplos de transformaciones:
-
-```handlebars
-<!-- Redimensionar a 500x300 (recortar si es necesario) -->
-<img src="{{this.imageUrl}}"
-     alt="{{this.title}}"
-     class="...">
-
-<!-- Para aplicar transformaciones, modifica la URL: -->
-
-<!-- Ancho de 500px, altura automática -->
-{{!-- Insertar w_500 después de /upload/ --}}
-
-<!-- Thumbnail cuadrado de 200x200 -->
-{{!-- Insertar w_200,h_200,c_fill después de /upload/ --}}
-
-<!-- Aplicar filtro de escala de grises -->
-{{!-- Insertar e_grayscale después de /upload/ --}}
-```
-
-## Helper de Handlebars para transformaciones
-
-Podemos crear un helper para facilitar las transformaciones:
+## Ruta GET para mostrar el formulario
 
 ```js
-// app.js (añadir después de configurar Handlebars)
+// app.js
 
-import Handlebars from 'handlebars';
+app.get('/places/:id/edit', async (req, res) => {
+  try {
+    await db.read();
 
-// Helper para transformar URLs de Cloudinary
-Handlebars.registerHelper('cloudinaryTransform', function(url, transformations) {
-  if (!url) return '';
+    const place = db.data.places.find(p => p.id === req.params.id);
 
-  // Insertar transformaciones después de '/upload/'
-  return url.replace('/upload/', `/upload/${transformations}/`);
+    if (!place) {
+      return res.status(404).send('Lugar no encontrado');
+    }
+
+    res.render('edit', { place });
+
+  } catch (error) {
+    console.error('Error al cargar formulario:', error);
+    res.status(500).send('Error al cargar el lugar');
+  }
 });
 ```
 
-Uso en Handlebars:
+## Ruta POST para procesar la actualización
 
-```handlebars
-<!-- Thumbnail de 200x200 -->
-<img
-  src="{{cloudinaryTransform this.imageUrl 'w_200,h_200,c_fill'}}"
-  alt="{{this.title}}"
->
+```js
+// app.js
 
-<!-- Imagen optimizada para web -->
-<img
-  src="{{cloudinaryTransform this.imageUrl 'w_800,q_auto,f_auto'}}"
-  alt="{{this.title}}"
->
+app.post('/places/:id/edit', upload.single('image'), async (req, res) => {
+  try {
+    await db.read();
+
+    const { title } = req.body;
+    const placeIndex = db.data.places.findIndex(p => p.id === req.params.id);
+
+    if (placeIndex === -1) {
+      return res.status(404).send('Lugar no encontrado');
+    }
+
+    const place = db.data.places[placeIndex];
+
+    // Si hay una nueva imagen
+    if (req.file) {
+      // 1. Eliminar la imagen anterior de Cloudinary
+      if (place.imagePublicId) {
+        await cloudinary.uploader.destroy(place.imagePublicId);
+      }
+
+      // 2. Subir la nueva imagen
+      const b64 = Buffer.from(req.file.buffer).toString('base64');
+      const dataURI = `data:${req.file.mimetype};base64,${b64}`;
+
+      const result = await cloudinary.uploader.upload(dataURI, {
+        folder: 'places',
+        resource_type: 'auto'
+      });
+
+      // 3. Actualizar los datos de la imagen
+      place.imageUrl = result.secure_url;
+      place.imagePublicId = result.public_id;
+    }
+
+    // Actualizar el título
+    place.title = title;
+    place.updatedAt = new Date().toISOString();
+
+    // Guardar cambios
+    db.data.places[placeIndex] = place;
+    await db.write();
+
+    res.redirect('/');
+
+  } catch (error) {
+    console.error('Error al actualizar lugar:', error);
+    res.status(500).send('Error al actualizar el lugar');
+  }
+});
 ```
 
-### Parámetros comunes:
+### ¿Qué hace este código?
 
-| Parámetro | Descripción | Ejemplo |
-|-----------|-------------|---------|
-| `w_500` | Ancho de 500px | `w_500` |
-| `h_300` | Altura de 300px | `h_300` |
-| `c_fill` | Modo de recorte (llenar) | `c_fill` |
-| `c_fit` | Ajustar sin recortar | `c_fit` |
-| `q_auto` | Calidad automática | `q_auto` |
-| `f_auto` | Formato automático (WebP si soporta) | `f_auto` |
-| `e_grayscale` | Escala de grises | `e_grayscale` |
-| `e_blur:300` | Desenfoque | `e_blur:300` |
-
+1. **Busca el lugar** por ID en la base de datos
+2. **Verifica si hay nueva imagen** con `if (req.file)`
+3. **Si hay nueva imagen:**
+   - Elimina la imagen anterior con `cloudinary.uploader.destroy()`
+   - Sube la nueva imagen a Cloudinary
+   - Actualiza `imageUrl` y `imagePublicId`
+4. **Si NO hay nueva imagen:** Mantiene la URL existente
+5. **Actualiza** el título y guarda los cambios
 ::
 
 ::card
 # Eliminar imágenes de Cloudinary
 
-Cuando eliminamos un proyecto, también debemos eliminar su imagen de Cloudinary.
+Cuando eliminamos un lugar, también debemos eliminar su imagen de Cloudinary.
 
 ```js
 // app.js
 
-app.post('/projects/:id/delete', async (req, res) => {
+app.post('/places/:id/delete', async (req, res) => {
   try {
     await db.read();
 
-    const projectId = parseInt(req.params.id);
-    const projectIndex = db.data.projects.findIndex(p => p.id === projectId);
+    const placeId = req.params.id;
+    const placeIndex = db.data.places.findIndex(p => p.id === placeId);
 
-    if (projectIndex === -1) {
-      return res.status(404).send('Proyecto no encontrado');
+    if (placeIndex === -1) {
+      return res.status(404).send('Lugar no encontrado');
     }
 
-    const project = db.data.projects[projectIndex];
+    const place = db.data.places[placeIndex];
 
-    // Si el proyecto tiene imagen, eliminarla de Cloudinary
-    if (project.imagePublicId) {
-      await cloudinary.uploader.destroy(project.imagePublicId);
+    // Si el lugar tiene una imagen, vamos a eliminarla de Cloudinary
+    if (place.imagePublicId) {
+      await cloudinary.uploader.destroy(place.imagePublicId);
     }
 
-    // Eliminar proyecto de la base de datos
-    db.data.projects.splice(projectIndex, 1);
+    // Eliminar el lugar de la base de datos
+    db.data.places.splice(placeIndex, 1);
     await db.write();
 
-    res.redirect('/projects');
+    res.redirect('/');
 
   } catch (error) {
-    console.error('Error al eliminar proyecto:', error);
-    res.status(500).render('error', {
-      message: 'Error al eliminar el proyecto'
-    });
+    console.error('Error al eliminar lugar:', error);
+    res.status(500).send('Error al eliminar el lugar')
   }
 });
 ```
@@ -591,319 +591,6 @@ app.post('/projects/:id/delete', async (req, res) => {
 ### ¿Por qué usar `imagePublicId`?
 
 Cloudinary necesita el `public_id` (no la URL) para eliminar imágenes. Por eso lo guardamos cuando subimos la imagen.
-
-::
-
-::card
-# Actualizar proyecto con nueva imagen
-
-Para el formulario de edición, permitimos cambiar la imagen.
-
-```handlebars
-<!-- views/project-edit.handlebars -->
-<div class="max-w-2xl mx-auto p-6">
-  <h1 class="text-3xl font-bold text-gray-800 mb-6">{{pageTitle}}</h1>
-
-  <form
-    action="/projects/{{project.id}}"
-    method="POST"
-    enctype="multipart/form-data"
-    class="bg-white p-8 rounded-lg border border-gray-200"
-  >
-    <!-- Mostrar imagen actual si existe -->
-    {{#if project.imageUrl}}
-      <div class="mb-6">
-        <label class="block text-gray-700 font-semibold mb-2">
-          Imagen actual:
-        </label>
-        <img
-          src="{{project.imageUrl}}"
-          alt="{{project.title}}"
-          class="w-full h-48 object-cover rounded-lg"
-        >
-      </div>
-    {{/if}}
-
-    <!-- Campo para nueva imagen -->
-    <div class="mb-6">
-      <label for="image" class="block text-gray-700 font-semibold mb-2">
-        {{#if project.imageUrl}}
-          Cambiar imagen:
-        {{else}}
-          Añadir imagen:
-        {{/if}}
-      </label>
-      <input
-        type="file"
-        id="image"
-        name="image"
-        accept="image/*"
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-      <p class="text-gray-500 text-sm mt-1">
-        Opcional - Máximo 5MB
-        {{#if project.imageUrl}}
-          - Dejar vacío para mantener la imagen actual
-        {{/if}}
-      </p>
-    </div>
-
-    <!-- Resto de campos... -->
-    <div class="mb-6">
-      <label for="title" class="block text-gray-700 font-semibold mb-2">
-        Título:
-      </label>
-      <input
-        type="text"
-        id="title"
-        name="title"
-        value="{{project.title}}"
-        required
-        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-    </div>
-
-    <!-- ... más campos ... -->
-
-    <div class="flex gap-3">
-      <button
-        type="submit"
-        class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition"
-      >
-        Guardar Cambios
-      </button>
-      <a
-        href="/projects/{{project.id}}"
-        class="px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition"
-      >
-        Cancelar
-      </a>
-    </div>
-  </form>
-</div>
-```
-
-## Ruta de actualización con imagen
-
-```js
-// app.js
-
-app.post('/projects/:id', upload.single('image'), async (req, res) => {
-  try {
-    await db.read();
-
-    const projectId = parseInt(req.params.id);
-    const { title, description, status } = req.body;
-
-    const projectIndex = db.data.projects.findIndex(p => p.id === projectId);
-
-    if (projectIndex === -1) {
-      return res.status(404).send('Proyecto no encontrado');
-    }
-
-    const existingProject = db.data.projects[projectIndex];
-
-    // Si hay nueva imagen
-    if (req.file) {
-      // Eliminar imagen anterior si existe
-      if (existingProject.imagePublicId) {
-        await cloudinary.uploader.destroy(existingProject.imagePublicId);
-      }
-
-      // Subir nueva imagen
-      const b64 = Buffer.from(req.file.buffer).toString('base64');
-      const dataURI = `data:${req.file.mimetype};base64,${b64}`;
-
-      const result = await cloudinary.uploader.upload(dataURI, {
-        folder: 'projects',
-        resource_type: 'auto'
-      });
-
-      // Actualizar proyecto con nueva imagen
-      db.data.projects[projectIndex] = {
-        ...existingProject,
-        title,
-        description,
-        status,
-        imageUrl: result.secure_url,
-        imagePublicId: result.public_id,
-        updatedAt: new Date().toISOString()
-      };
-    } else {
-      // Sin nueva imagen, mantener la existente
-      db.data.projects[projectIndex] = {
-        ...existingProject,
-        title,
-        description,
-        status,
-        updatedAt: new Date().toISOString()
-      };
-    }
-
-    await db.write();
-    res.redirect(`/projects/${projectId}`);
-
-  } catch (error) {
-    console.error('Error al actualizar proyecto:', error);
-    res.status(500).render('error', {
-      message: 'Error al actualizar el proyecto'
-    });
-  }
-});
-```
-
-::
-
-::card
-# Validación y manejo de errores
-
-## Validar tipo y tamaño de archivo
-
-Ya configuramos límites en Multer, pero podemos mejorar el manejo de errores:
-
-```js
-// app.js
-
-// Middleware de manejo de errores de Multer
-app.use((error, req, res, next) => {
-  if (error instanceof multer.MulterError) {
-    if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).render('error', {
-        message: 'El archivo es demasiado grande. Máximo 5MB.'
-      });
-    }
-  }
-
-  if (error.message === 'Solo se permiten imágenes') {
-    return res.status(400).render('error', {
-      message: 'Solo se permiten archivos de imagen.'
-    });
-  }
-
-  next(error);
-});
-```
-
-## Validar imagen en el cliente (opcional)
-
-```html
-<script>
-  const imageInput = document.getElementById('image');
-
-  imageInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    // Validar tipo
-    if (!file.type.startsWith('image/')) {
-      alert('Solo se permiten imágenes');
-      this.value = '';
-      return;
-    }
-
-    // Validar tamaño (5MB)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert('La imagen es demasiado grande. Máximo 5MB.');
-      this.value = '';
-      return;
-    }
-
-    // Preview de la imagen (opcional)
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const preview = document.getElementById('preview');
-      if (preview) {
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-</script>
-```
-
-::
-
-::card
-# Optimización de imágenes
-
-## Buenas prácticas con Cloudinary
-
-### 1. Usar formato automático
-```handlebars
-{{cloudinaryTransform this.imageUrl 'f_auto,q_auto'}}
-```
-
-Cloudinary entregará:
-- WebP a navegadores modernos
-- JPEG a navegadores antiguos
-- Calidad optimizada automáticamente
-
-### 2. Responsive images
-
-```handlebars
-<img
-  srcset="
-    {{cloudinaryTransform this.imageUrl 'w_400,f_auto,q_auto'}} 400w,
-    {{cloudinaryTransform this.imageUrl 'w_800,f_auto,q_auto'}} 800w,
-    {{cloudinaryTransform this.imageUrl 'w_1200,f_auto,q_auto'}} 1200w
-  "
-  sizes="(max-width: 600px) 400px, (max-width: 1000px) 800px, 1200px"
-  src="{{cloudinaryTransform this.imageUrl 'w_800,f_auto,q_auto'}}"
-  alt="{{this.title}}"
-  class="w-full h-48 object-cover rounded-lg"
->
-```
-
-### 3. Lazy loading
-
-```handlebars
-<img
-  src="{{cloudinaryTransform this.imageUrl 'w_800,f_auto,q_auto'}}"
-  alt="{{this.title}}"
-  loading="lazy"
-  class="w-full h-48 object-cover rounded-lg"
->
-```
-
-### 4. Placeholder mientras carga
-
-```handlebars
-<img
-  src="{{cloudinaryTransform this.imageUrl 'w_50,e_blur:1000,f_auto,q_auto'}}"
-  data-src="{{cloudinaryTransform this.imageUrl 'w_800,f_auto,q_auto'}}"
-  alt="{{this.title}}"
-  class="w-full h-48 object-cover rounded-lg blur-sm"
-  onload="this.classList.remove('blur-sm'); this.src = this.dataset.src;"
->
-```
-
-::
-
-::card
-# Ejercicio práctico
-
-Implementa las siguientes mejoras en tu proyecto:
-
-## Nivel básico
-1. ✅ Añadir campo de imagen al formulario de creación
-2. ✅ Subir imagen a Cloudinary
-3. ✅ Mostrar imagen en lista y detalle
-4. ✅ Eliminar imagen al borrar proyecto
-
-## Nivel intermedio
-5. Añadir preview de imagen antes de subir
-6. Crear helper de Handlebars para transformaciones
-7. Implementar cambio de imagen en edición
-8. Validación de tipo y tamaño de archivo
-
-## Nivel avanzado
-9. Implementar lazy loading de imágenes
-10. Usar transformaciones responsive (srcset)
-11. Añadir galería de imágenes (múltiples imágenes por proyecto)
-12. Implementar recorte de imagen antes de subir
 
 ::
 
@@ -928,45 +615,5 @@ Implementa las siguientes mejoras en tu proyecto:
 - **Imgix:** Optimización y CDN de imágenes
 - **ImageKit:** CDN de imágenes con transformaciones
 - **AWS S3 + CloudFront:** Más control, más configuración
-
-::
-
-::card
-# Resumen
-
-### Conceptos aprendidos:
-
-**Cloudinary:**
-- Servicio de gestión de imágenes en la nube
-- Upload, storage, transformaciones y CDN
-- Optimización automática de imágenes
-
-**Integración:**
-```js
-// Configurar
-cloudinary.config({ ... });
-
-// Subir
-const result = await cloudinary.uploader.upload(dataURI);
-
-// Eliminar
-await cloudinary.uploader.destroy(publicId);
-```
-
-**Transformaciones:**
-```
-/upload/w_500,h_300,c_fill,f_auto,q_auto/image.jpg
-```
-
-**Multer:**
-- Middleware para procesar archivos
-- Validación de tipo y tamaño
-- Almacenamiento temporal en memoria
-
-**Buenas prácticas:**
-- Usar `f_auto,q_auto` siempre
-- Implementar lazy loading
-- Eliminar imágenes al borrar recursos
-- Validar en cliente y servidor
 
 ::

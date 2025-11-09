@@ -105,6 +105,7 @@ app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
+// Inicia el servidor
 app.listen(3000, () => {
   console.log(`Server running at http://localhost:3000/`);
 });

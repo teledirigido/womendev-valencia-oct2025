@@ -1,18 +1,14 @@
 ::card
 # CSS Frameworks y Metodologías
 
-En esta lección aprenderemos sobre metodologías CSS y frameworks modernos para organizar y escribir mejor CSS.
-
-## ¿Por qué necesitamos organización en CSS?
-
-Cuando trabajas en proyectos pequeños, escribir CSS puede parecer simple. Pero a medida que el proyecto crece, el CSS se vuelve difícil de mantener:
+Escribir CSS puede parecer simple. Pero a medida que un proyecto crece, el CSS se puede volver difícil de mantener:
 
 - Nombres de clases confusos
 - Estilos que se sobrescriben sin querer
 - Código duplicado
 - Difícil de trabajar en equipo
 
-**Solución:** Usar metodologías y frameworks que nos ayuden a organizar mejor nuestro código.
+Usar metodologías y frameworks nos pueden ayudar a organizar mejor nuestro código.
 
 ::
 
@@ -140,9 +136,9 @@ Uso:
 
 ### 2. Separar contenedor y contenido
 
-El contenido no debe depender de dónde está ubicado.
+Se recomienda no generar dependencia de nuestros elementos, ya sea por ubicación u otra razón.
 
-**❌ Malo:**
+**❌ No recomendado:**
 ```css
 .sidebar .button {
   width: 100%;
@@ -153,7 +149,7 @@ El contenido no debe depender de dónde está ubicado.
 }
 ```
 
-**✅ Bueno:**
+**✅ Recomendado:**
 ```css
 .button-full {
   width: 100%;
@@ -332,18 +328,170 @@ button { background-color: #e74c3c; color: #fff; }
   cursor: pointer;
 }
 ```
+::
+
+::card
+# Utility First CSS
+
+Utility-First es una metodología que propone usar clases pequeñas y específicas, 
+cada una con un solo propósito, en lugar de crear clases semánticas con múltiples estilos.
+
+## La filosofía
+
+En lugar de crear clases personalizadas para cada componente, usamos clases de "utilidad" que hacen una sola cosa.
+
+**Enfoque tradicional:**
+```css
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+```
+
+```html
+<h3 class="card-title">Título</h3>
+```
+
+**Utility-First:**
+```css
+.text-xl { font-size: 1.5rem; }
+.font-bold { font-weight: bold; }
+.text-gray-800 { color: #333; }
+.mb-2 { margin-bottom: 0.5rem; }
+```
+
+```html
+<h3 class="text-xl font-bold text-gray-800 mb-2">Título</h3>
+```
+
+## Ventajas
+
+1. No más nombres inventados.  
+No tienes que pensar: "¿cómo llamo a esta clase?". Simplemente usas las utilidades existentes.
+2. Cambios más rápidos.  
+Todo está en el HTML. No necesitas ir al archivo CSS para hacer cambios.
+
+3. CSS que no crece
+Reutilizas las mismas clases de utilidad. Tu archivo CSS no crece con cada nuevo componente.
+
+4. Consistencia automática.  
+Usas valores predefinidos (espaciados, colores, tamaños), lo que mantiene el diseño coherente.
+
+## Desventajas
+1. HTML más largo.  
+El HTML se vuelve más verboso con muchas clases.
+
+```html
+<!-- Puede verse así -->
+<button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+  Click
+</button>
+```
+2. Repetición.  
+Si un componente se repite mucho, duplicas las mismas clases varias veces.
+
+3. Curva de aprendizaje.  
+Necesitas aprender qué hace cada clase de utilidad.
+
+4. Volviendo a crear componentes.  
+Los frameworks utility-first terminan ofreciendo formas de agrupar clases (componentes, `@apply`), volviendo al enfoque tradicional para evitar la repetición.
+
+5. Dependencia del framework.  
+Aprendes las clases del framework, pero no CSS real, lo cual genera dependencia al framework.
+
+<details>
+<summary>BEM vs Utility-First</summary>
+
+### BEM:
+
+Clases con nombres que describen el propósito, no el estilo visual
+
+```html
+<button class="btn btn--primary btn--large">Guardar</button>
+```
+
+
+### Utility-First:
+
+Clases funcionales que describen exactamente qué hacen (color, tamaño, espaciado)
+
+
+```html 
+<button class="px-6 py-3 bg-blue-500 text-white text-lg rounded">Guardar</button>
+```
+</details>
+
+## ¿Cuándo usar Utility-First?
+
+
+|Ideal para:|No recomendado para:|
+|-----------|--------------------|
+|Proyectos que cambian frecuentemente|Proyectos muy simples (puede ser excesivo)
+|Equipos que quieren desarrollo rápido|Equipos que prefieren separación estricta HTML/CSS
+|Aplicaciones con muchas variaciones de diseño|Si necesitas soporte para navegadores muy antiguos
+|Cuando quieres un sistema de diseño consistente||
 
 ::
 
 ::card
-# CSS Frameworks - Panorama general
+# Conclusión sobre las diferentes metodologías
+
+No existe una metodología "perfecta" para todos los proyectos. Cada una tiene su lugar y momento ideal.
+
+### BEM (Block Element Modifier)
+- Nombres claros y predecibles
+- Evita conflictos de estilos
+- Ideal para proyectos donde trabajas directamente con CSS
+
+### OOCSS (Object-Oriented CSS)
+- Reutilización de código
+- Separación de estructura y apariencia
+- Reduce duplicación de estilos
+
+### Utility-First
+- Desarrollo rápido sin inventar nombres
+- Consistencia automática con valores predefinidos
+- Puede alejar del aprendizaje profundo de CSS
+
+## En la práctica
+
+Muchos proyectos modernos **combinan** estas metodologías:
+
+- Usan **BEM** para componentes grandes y únicos
+- Aplican **OOCSS** para crear objetos reutilizables
+- Adoptan **Utility-First** (como Tailwind) para desarrollo rápido o componentes visuales sin definición semántica
+
+## Tu decisión depende de:
+
+1. **Tamaño del proyecto:** ¿Simple o complejo?
+2. **Equipo:** ¿Cuántas personas trabajarán en el CSS?
+3. **Tiempo:** ¿Necesitas ir rápido o construir algo muy personalizado?
+4. **Experiencia:** ¿El equipo conoce CSS a profundidad?
+5. **Mantenimiento:** ¿El proyecto vivirá mucho tiempo?
+
+## Recomendación para empezar
+
+1. **Aprende CSS vanilla primero** - Entiende los fundamentos
+2. **Practica con BEM** - Aprende a organizar tu código
+3. **Experimenta con Utility-First** - Descubre la velocidad de desarrollo
+4. **Decide según el proyecto** - No hay una solución única
+
+Lo importante no es seguir una metodología religiosamente, sino escribir CSS que tú y tu equipo puedan mantener.
+
+::
+
+::card
+# CSS Frameworks
 
 Los frameworks CSS son bibliotecas preconstruidas que nos dan componentes y estilos listos para usar.
+::
 
-## Frameworks populares
+::card
+# Bootstrap
 
-### Bootstrap
-El framework más popular y usado en el mundo.
+Framework popular y muy utilizado.
 
 **Ventajas:**
 - Muy completo
@@ -372,7 +520,13 @@ El framework más popular y usado en el mundo.
 </div>
 ```
 
-### Material Design (Materialize, MUI)
+https://getbootstrap.com/
+
+::
+
+::card
+# Material Design (Materialize, MUI)
+
 Basado en el sistema de diseño de Google.
 
 **Ventajas:**
@@ -386,36 +540,15 @@ Basado en el sistema de diseño de Google.
 
 **Cuándo usarlo:** Apps que quieren el look de Material Design
 
-### Bulma
-Framework CSS puro (sin JavaScript).
 
-**Ventajas:**
-- Solo CSS, sin JavaScript
-- Sintaxis simple y moderna
-- Basado en Flexbox
-- Fácil de personalizar
+- https://m3.material.io/
+- https://www.interaction-design.org/literature/topics/material-design
+- https://material-web.dev/ (En mantenimiento)
+::
 
-**Desventajas:**
-- Menos componentes que Bootstrap
-- Comunidad más pequeña
+::card
 
-```html
-<!-- CDN de Bulma -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-
-<!-- Ejemplo de uso -->
-<button class="button is-primary">Click me</button>
-<div class="card">
-  <div class="card-content">
-    <p class="title">Card title</p>
-    <p class="subtitle">Card subtitle</p>
-  </div>
-</div>
-```
-
-**Cuándo usarlo:** Proyectos que no necesitan JavaScript del framework
-
-### Simple.css
+# Simple.css
 Framework minimalista sin clases.
 
 **Ventajas:**
@@ -438,6 +571,9 @@ Framework minimalista sin clases.
   <h1>Title</h1>
   <p>Content here</p>
 </article>
+
+- https://simplecss.org/
+
 ```
 
 **Cuándo usarlo:** Blogs, documentación, páginas simples
@@ -445,39 +581,19 @@ Framework minimalista sin clases.
 ::
 
 ::card
-# Tailwind CSS - Utility-First Framework
+# Tailwind
 
-Tailwind es diferente a los frameworks tradicionales. En lugar de componentes preconstruidos, te da clases de utilidad pequeñas.
+Tailwind es un utility-first framework muy popular.
 
 ## Filosofía: Utility-First
 
-En lugar de escribir CSS personalizado, usas clases de utilidad directamente en el HTML.
+Tailwind promueve el uso de clases de utilidad directamente en el HTML, en vez de escribir CSS.
 
-### Comparación
-
-**CSS tradicional:**
-```html
-<button class="btn-primary">Click me</button>
-```
-
-```css
-.btn-primary {
-  padding: 0.75rem 1.5rem;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-}
-```
-
-**Tailwind:**
 ```html
 <button class="px-6 py-3 bg-blue-500 text-white rounded">
   Click me
 </button>
 ```
-
-No necesitas escribir CSS separado. Todo está en el HTML.
 
 ## Ventajas de Tailwind
 
@@ -498,11 +614,9 @@ No necesitas escribir CSS separado. Todo está en el HTML.
 ::card
 # Integrar Tailwind con Handlebars
 
-Vamos a añadir Tailwind a nuestro proyecto usando CDN.
-
 ## Paso 1: Actualizar el layout
 
-```handlebars
+```html
 <!-- views/layouts/main.handlebars -->
 <!DOCTYPE html>
 <html>
@@ -521,6 +635,78 @@ Vamos a añadir Tailwind a nuestro proyecto usando CDN.
 ```
 
 **Nota:** Para producción es mejor instalar Tailwind con npm, pero para aprender el CDN funciona perfecto.
+
+<details>
+<summary>Instalar Tailwind con npm</summary>
+
+1. Instalar Tailwind (v4)
+```bash
+npm install -D tailwindcss@latest
+```
+
+2. Crear archivo CSS de entrada (ej: `public/input.css`)
+```css
+/* public/input.css */
+@import "tailwindcss";
+```
+
+Recuerda que en `app.js` necesitas añadir la carpeta `/public`:
+
+```js
+// app.js
+app.use(express.static('public'));
+```
+
+3. Añadir un archivo de configuración de Tailwind
+
+Necesitamos un archivo de configuración llamado `tailwind.config.js` para observar los archivos de handlebars:
+
+```js
+// tailwind.config.js
+export default {
+  content: ['./views/**/*.handlebars'],
+}
+```
+
+
+4. Añadir scripts en `package.json`
+```json
+"scripts": {
+  "build:css": "tailwindcss -i ./public/input.css -o ./public/output.css",
+  "watch:css": "tailwindcss -i ./public/input.css -o ./public/output.css --watch"
+}
+```
+
+5. Compilar CSS
+```bash
+# Para hacer un build
+npm run build:css
+
+# O en desarrollo (modo watch):
+npm run watch:css
+```
+
+6. Enlazar el CSS compilado en tu HTML/Handlebars
+```html
+<link href="/output.css" rel="stylesheet">
+```
+
+7. (Opcional) Puedes añadir configuraciones personalizadas en `tailwind.config.js`
+```javascript
+export default {
+  content: ['./views/**/*.handlebars'],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#3498db',
+      }
+    }
+  }
+}
+```
+
+</details>
+
 
 ## Paso 2: Usar clases de Tailwind
 
@@ -564,7 +750,7 @@ Vamos a añadir Tailwind a nuestro proyecto usando CDN.
 Vamos a convertir nuestra lista de proyectos para usar Tailwind.
 
 ## Antes (CSS personalizado):
-```handlebars
+```html
 <!-- views/projects.handlebars -->
 <h1>{{pageTitle}}</h1>
 
@@ -583,7 +769,7 @@ Vamos a convertir nuestra lista de proyectos para usar Tailwind.
 ```
 
 ## Después (con Tailwind):
-```handlebars
+```html
 <!-- views/projects.handlebars -->
 <div class="max-w-4xl mx-auto p-6">
   <h1 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b-2 border-gray-200">
@@ -656,7 +842,7 @@ Vamos a convertir nuestra lista de proyectos para usar Tailwind.
 ::card
 # Formulario con Tailwind
 
-```handlebars
+```html
 <!-- views/project-form.handlebars -->
 <div class="max-w-2xl mx-auto p-6">
   <h1 class="text-3xl font-bold text-gray-800 mb-6">{{pageTitle}}</h1>
@@ -764,6 +950,13 @@ Ahora puedes usar:
 </button>
 ```
 
+Al personalizar colores con nombres como `primary` o `danger`, estamos volviendo a usar nombres semánticos (como en BEM) en lugar de nombres puramente descriptivos del estilo.
+
+```html
+<button class="bg-primary">  <!-- Semántico: "es primario" -->
+<button class="bg-blue-500"> <!-- Descriptivo: "es azul 500" -->
+```
+
 ::
 
 ::card
@@ -796,35 +989,6 @@ Ahora puedes usar:
 
 **Ejemplo:** Aplicaciones web modernas, SaaS, dashboards
 
-## Resumen de comparación
-
-| Aspecto | CSS + BEM | Bootstrap | Tailwind |
-|---------|-----------|-----------|----------|
-| Velocidad inicial | Lenta | Muy rápida | Media |
-| Personalización | Total | Difícil | Fácil |
-| Tamaño archivo | Pequeño | Grande | Medio |
-| Curva aprendizaje | Baja | Baja | Media |
-| Mantenibilidad | Media | Baja | Alta |
-| Diseños únicos | ✅ | ❌ | ✅ |
-
-::
-
-::card
-# Ejercicio práctico
-
-Convierte todas las vistas de tu proyecto de LowDB para usar Tailwind:
-
-1. ✅ Lista de proyectos (`projects.handlebars`)
-2. ✅ Detalle de proyecto (`project-detail.handlebars`)
-3. ✅ Formulario de creación (`project-form.handlebars`)
-4. Formulario de edición (`project-edit.handlebars`)
-
-**Bonus:** Añade estados de hover, transiciones y efectos para mejorar la experiencia de usuario.
-
-**Reto:** Crea un sistema de badges para los estados usando colores diferentes:
-- `planning`: amarillo
-- `in-progress`: azul
-- `completed`: verde
 
 ::
 
@@ -848,6 +1012,6 @@ Convierte todas las vistas de tu proyecto de LowDB para usar Tailwind:
 
 - **Tailwind UI:** https://tailwindui.com (De pago)
 - **Flowbite:** https://flowbite.com (Gratis)
-- **DaisyUI:** https://daisyui.com (Plugin de Tailwind)
+- **DaisyUI:** https://daisyui.com (OOCSS approach for Tailwind)
 
 ::

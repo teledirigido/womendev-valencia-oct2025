@@ -67,7 +67,7 @@ const course = [
     title: 'Día 4',
     lessons: [
       {
-        title: 'LowDB I - Create & Read',
+        title: 'LowDB - Create & Read',
         link: '/lessons/intro-lowdb'
       },
       {
@@ -95,6 +95,10 @@ const course = [
       {
         title: 'Express & Cloudinary',
         link: '/lessons/express-cloudinary'
+      },
+      {
+        title: 'Estructura de un proyecto en Express',
+        link: '/lessons/express-project-structure'
       }
     ]
   }

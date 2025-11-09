@@ -24,7 +24,10 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-weight: 300;
   & code {
-    font-size:inherit;
+    font-size:86%;
+    background-color: #EDEDED;
+    padding:0.1rem 0.5rem;
+    border-radius:0.5rem;
   }
 }
 
