@@ -1451,12 +1451,18 @@ array
 - Usa `const` por defecto
 - Solo usa `let` cuando necesites reasignar
 
+**Template Literals:**
+- `` `${variable} texto` `` más fácil que concatenación
+
 **Funciones:**
 - Arrow functions son el estándar moderno
 - Forma corta: `param => expresión`
 
-**Template Literals:**
-- `` `${variable} texto` `` más fácil que concatenación
+**Spread Operator:**
+- `[...array]` copia arrays sin mutar el original
+- Combina arrays: `[...arr1, ...arr2]`
+- Añade elementos: `[...array, newItem]`
+- Esencial para programación inmutable
 
 **Mutación:**
 - Métodos que mutan: `.push()`, `.pop()`, `.splice()`
@@ -1474,6 +1480,12 @@ array
 - `.some()` → ¿AL MENOS UNO?
 - `.every()` → ¿TODOS?
 - `.reduce()` → REDUCIR a un valor
+
+**Chaining (Encadenamiento):**
+- Combina múltiples métodos en secuencia
+- Lee de arriba hacia abajo como una línea de ensamblaje
+- Patrón común en código profesional moderno
+- Mantén legibilidad: un método por línea
 
 **Destructuring:**
 - Extrae propiedades de forma limpia
