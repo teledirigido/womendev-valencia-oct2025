@@ -1,9 +1,18 @@
 #!/bin/bash
 
 # Deploy script for Nuxt static site
-# Deploys to: root@REDACTED:/var/www/devwomen2025
+# Requires .deploy.config file with: DEPLOY_USER, DEPLOY_HOST, DEPLOY_PATH
 
 set -e  # Exit on any error
+
+# Load deployment configuration
+source .deploy.config
+
+if [ -z "$DEPLOY_USER" ] || [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_PATH" ]; then
+  echo "❌ Error: Required environment variables not set"
+  echo "Please set: DEPLOY_USER, DEPLOY_HOST, DEPLOY_PATH"
+  exit 1
+fi
 
 echo "🚀 Starting deployment process..."
 
@@ -23,7 +32,7 @@ rsync -avz --delete \
   --exclude='.htaccess' \
   --exclude='.htpasswd' \
   .output/public/ \
-  root@REDACTED:/var/www/devwomen2025/
+  ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/
 
 echo "✅ Deployment complete!"
 echo "🌐 Site should be live at your domain"

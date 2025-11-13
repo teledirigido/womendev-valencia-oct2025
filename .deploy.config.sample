@@ -1,0 +1,3 @@
+DEPLOY_USER=your-user
+DEPLOY_HOST=your-ip
+DEPLOY_PATH=your-path
