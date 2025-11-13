@@ -86,7 +86,7 @@ const course = [
     ]
   },
   {
-    title: 'Dìa 5',
+    title: 'Día 5',
     lessons: [
       {
         title: 'CSS Frameworks and Methodologies',
@@ -96,6 +96,11 @@ const course = [
         title: 'Express & Cloudinary',
         link: '/lessons/express-cloudinary'
       },
+    ]
+  },
+  {
+    title: 'Día 6',
+    lessons: [
       {
         title: 'Estructura de un proyecto en Express',
         link: '/lessons/express-project-structure'
@@ -106,8 +111,16 @@ const course = [
         link: '/lessons/practice-mini-project-1'
       }
     ]
+  },
+  {
+    title: 'Día 7',
+    lessons: [
+      {
+        title: 'Javascript Review',
+        link: '/lessons/javascript-review'
+      }
+    ]
   }
-  
 ]
 </script>
 
