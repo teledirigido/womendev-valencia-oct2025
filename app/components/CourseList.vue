@@ -120,6 +120,33 @@ const course = [
         link: '/lessons/javascript-review'
       }
     ]
+  },
+  {
+    title: 'Día 8',
+    lessons: [
+      {
+        type: 'Práctica',
+        title: 'Práctica; Travel Reviews'
+      }
+    ]
+  },
+  {
+    title: 'Día 9',
+    lessons: [
+      {
+        type: 'Práctica',
+        title: 'Práctica; Travel Reviews'
+      }
+    ]
+  },
+  {
+    title: 'Día 10',
+    lessons: [
+      {
+        title: 'Express & Authentication',
+        link: '/lessons/authentication-jwt'
+      }
+    ]
   }
 ]
 </script>
