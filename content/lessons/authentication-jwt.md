@@ -116,9 +116,6 @@ npm init -y
 
 # Instalar dependencias necesarias
 npm install express jsonwebtoken bcryptjs express-handlebars cookie-parser
-
-# Instalar dependencia de desarrollo
-npm install --save-dev nodemon
 ```
 
 ## Paso 2: Actualizar package.json
@@ -126,7 +123,7 @@ npm install --save-dev nodemon
 {
   "type": "module",
   "scripts": {
-    "dev": "nodemon app.js",
+    "dev": "node --watch .",
     "start": "node app.js"
   }
 }
@@ -150,8 +147,10 @@ auth-jwt-example/
 │   │   ├── register.handlebars # Formulario de registro
 │   │   └── login.handlebars    # Formulario de login
 │   ├── dashboard.handlebars   # Página principal del dashboard
-│   └── dashboard/
-│       └── profile.handlebars # Perfil del usuario
+│   ├── dashboard/
+│   │   ├── index.handlebars   # Home de la Zona privada
+│   │   └── profile.handlebars # Perfil del usuario
+│   └── home.handlebars        # Home de la web
 └── config/                   # Configuración
     └── jwt.js                # Configuración JWT
 ```
@@ -186,7 +185,7 @@ let users = [
     id: 1,
     email: 'maria@email.com',
     // Password: "123456" cifrado con bcrypt
-    password: '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
+    password: '$2b$10$Ku3rDOL/A4rhK75WftyH/usmcw276sKtsvdoP9UOFOCEG8vXueNT2'
   }
 ];
 
@@ -227,7 +226,6 @@ Creamos la base de nuestro servidor con las rutas de autenticación.
 import express from 'express';
 import { engine } from 'express-handlebars';
 import cookieParser from 'cookie-parser';
-import authRouter from './routes/auth.js';
 
 const app = express();
 const PORT = 3000;
@@ -240,9 +238,6 @@ app.set('views', './views');
 // Middleware global
 app.use(express.urlencoded({ extended: true })); // Para todos los formularios
 app.use(cookieParser());                    // Para manejar cookies en toda la app
-
-// Usar rutas de autenticación
-app.use('/auth', authRouter);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -734,7 +729,7 @@ Elimina cookies con tokens inválidos o expirados
 
 Ahora podemos crear rutas que solo usuarios autenticados pueden acceder. Necesitamos crear las plantillas para estas páginas también.
 
-## Plantilla de Dashboard: `views/dashboard.handlebars`
+## Plantilla de Dashboard: `views/dashboard/index.handlebars`
 ```html
 <h1>Dashboard</h1>
 <p>¡Bienvenida <strong>{{user.email}}</strong>!</p>
